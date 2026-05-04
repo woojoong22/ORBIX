@@ -5,6 +5,18 @@ from django.urls import reverse
 from .models import Notification, Post, Subscription
 
 
+class AuthRedirectTests(TestCase):
+    def test_login_redirects_to_home_instead_of_missing_profile_url(self):
+        User.objects.create_user(username='orbit', password='password')
+
+        response = self.client.post(reverse('login'), {
+            'username': 'orbit',
+            'password': 'password',
+        })
+
+        self.assertRedirects(response, reverse('home'), fetch_redirect_response=False)
+
+
 class FollowEndpointTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='orbit', password='password')
