@@ -3,6 +3,7 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import RedirectView
 from posts import views
 
 urlpatterns = [
@@ -21,6 +22,7 @@ urlpatterns = [
         name='login',
     ),
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
+    path('accounts/profile/', RedirectView.as_view(pattern_name='home', permanent=False)),
 ]
 
 if settings.DEBUG:
