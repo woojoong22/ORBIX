@@ -278,7 +278,8 @@
             width: min(1540px, 100%);
             margin: 0 auto;
             padding: 10px 24px 0;
-            background: transparent;
+            background:
+                linear-gradient(180deg, rgba(251, 252, 255, 0.98) 0%, rgba(239, 244, 250, 0.96) 82%, rgba(239, 244, 250, 0) 100%);
             backdrop-filter: blur(14px);
         }
 
@@ -296,15 +297,16 @@
         }
 
         .orbit-control-row {
-            display: grid;
-            grid-template-columns: auto 1fr auto;
+            display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
             padding: 0 10px 8px;
         }
 
         .orbit-title {
+            width: min(620px, 100%);
             min-width: 0;
+            text-align: center;
         }
 
         .orbit-title strong,
@@ -331,16 +333,16 @@
         .orbit-button {
             display: grid;
             place-items: center;
-            width: 38px;
-            height: 38px;
+            width: 44px;
+            height: 44px;
             border: 1px solid var(--line);
             border-radius: 8px;
             background: rgba(255, 255, 255, 0.9);
             color: var(--ink);
-            font-size: 22px;
+            font-size: 28px;
             font-weight: 900;
             cursor: pointer;
-            box-shadow: 0 7px 18px rgba(25, 31, 44, 0.06);
+            box-shadow: 0 10px 24px rgba(25, 31, 44, 0.1);
         }
 
         .orbit-button:hover {
@@ -354,6 +356,28 @@
             overflow: hidden;
             touch-action: pan-y;
             cursor: grab;
+            background:
+                linear-gradient(180deg, rgba(251, 252, 255, 0.98), rgba(239, 244, 250, 0.96));
+            border-radius: 8px;
+        }
+
+        .orbit-viewport .orbit-button {
+            position: absolute;
+            top: 54%;
+            z-index: 130;
+            transform: translateY(-50%);
+        }
+
+        .orbit-viewport .orbit-button:hover {
+            transform: translateY(-50%) scale(1.04);
+        }
+
+        .orbit-prev {
+            left: max(10px, calc(50% - min(430px, 42vw) - 34px));
+        }
+
+        .orbit-next {
+            right: max(10px, calc(50% - min(430px, 42vw) - 34px));
         }
 
         .orbit-viewport.dragging {
@@ -599,6 +623,14 @@
                 width: 94px;
                 min-height: 56px;
                 font-size: 12px;
+            }
+
+            .orbit-prev {
+                left: 8px;
+            }
+
+            .orbit-next {
+                right: 8px;
             }
         }
 
@@ -1671,14 +1703,14 @@
         <div class="topic-shell">
             <div class="topic-topline">
                 <div class="orbit-control-row">
-                    <button class="orbit-button" type="button" data-orbit-prev aria-label="이전 궤도">‹</button>
                     <div class="orbit-title">
                         <strong>{% if topic_category %}{{ topic_category.name }} 궤도{% else %}ORBIX 토픽 궤도{% endif %}</strong>
                         <span>드래그하거나 버튼으로 회전해서 게시판 세계를 탐색하세요</span>
                     </div>
-                    <button class="orbit-button" type="button" data-orbit-next aria-label="다음 궤도">›</button>
                 </div>
                 <div class="orbit-viewport" data-orbit>
+                    <button class="orbit-button orbit-prev" type="button" data-orbit-prev aria-label="이전 궤도">‹</button>
+                    <button class="orbit-button orbit-next" type="button" data-orbit-next aria-label="다음 궤도">›</button>
                     <div class="orbit-ring" aria-hidden="true"></div>
                     <div class="orbit-core" aria-hidden="true">
                         <span>{% if topic_category %}{{ topic_category.name }}{% else %}ORBIX{% endif %}</span>
@@ -2124,7 +2156,7 @@
             });
             orbit.addEventListener("pointermove", (event) => {
                 if (!orbitDragStart) return;
-                orbitRotation = orbitDragStart.rotation + (event.clientX - orbitDragStart.x) / 180;
+                orbitRotation = orbitDragStart.rotation + (event.clientX - orbitDragStart.x) / 42;
                 layoutOrbit();
             });
             orbit.addEventListener("pointerup", (event) => {
