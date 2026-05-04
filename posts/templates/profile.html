@@ -1,0 +1,1518 @@
+﻿<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ feed_profile.display_name }} · Orbix</title>
+    <style>
+        :root {
+            --ink: #16181d;
+            --muted: #6f7785;
+            --line: #d9dee8;
+            --soft: #f4f6f9;
+            --accent: #e5484d;
+            --blue: #2563eb;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #eef1f5;
+            color: var(--ink);
+            font-family: Arial, "Noto Sans KR", sans-serif;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 64px;
+            padding: 0 24px;
+            border-bottom: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(14px);
+        }
+
+        .brand,
+        .button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+        }
+
+        .brand-logo {
+            display: block;
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            object-fit: cover;
+            box-shadow: 0 8px 22px rgba(22, 24, 29, 0.16);
+        }
+
+        .brand-wordmark {
+            background: linear-gradient(100deg, #14b8ff 0%, #4763ff 45%, #d946ef 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .brand-mark,
+        .avatar {
+            display: grid;
+            place-items: center;
+            background: var(--ink);
+            color: #fff;
+            font-weight: 800;
+        }
+
+        .brand-mark {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+        }
+
+        .button {
+            justify-content: center;
+            min-height: 38px;
+            padding: 0 14px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            font-size: 14px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(270px, 330px) minmax(420px, 1fr) minmax(280px, 340px);
+            gap: 18px;
+            width: min(1540px, 100%);
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .profile-main {
+            min-width: 0;
+        }
+
+        .rail,
+        .chat {
+            position: sticky;
+            top: 82px;
+            align-self: start;
+        }
+
+        .panel,
+        .chat-box {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .panel {
+            padding: 14px;
+            margin-bottom: 14px;
+        }
+
+        .section-title {
+            margin: 0 0 12px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .metric,
+        .hint {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .metric {
+            margin: 0 0 14px;
+        }
+
+        .scroll-panel,
+        .universe-list {
+            display: grid;
+            gap: 8px;
+            max-height: 260px;
+            overflow-y: auto;
+            padding-right: 4px;
+            overscroll-behavior: contain;
+        }
+
+        .universe-list {
+            max-height: 360px;
+        }
+
+        .board-row {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding: 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .board-row:hover,
+        .board-row.active {
+            border-color: var(--blue);
+            background: #eef4ff;
+        }
+
+        .board-row span {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .board-search-form {
+            display: grid;
+            grid-template-columns: 1fr 42px;
+            gap: 8px;
+        }
+
+        .orbit-copy {
+            margin: -4px 0 10px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.45;
+        }
+
+        .board-search {
+            width: 100%;
+            height: 40px;
+            padding: 0 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            font: inherit;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .board-search-button {
+            display: grid;
+            place-items: center;
+            width: 42px;
+            height: 40px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--ink);
+            color: #fff;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .board-row.hidden,
+        .topic-boards-panel.hidden,
+        .topic-board-group.hidden,
+        .topic-branch.hidden,
+        .subtopic-list.hidden {
+            display: none;
+        }
+
+        .topic-branch {
+            display: grid;
+            gap: 8px;
+        }
+
+        .universe-trigger,
+        .subtopic-trigger {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            min-height: 44px;
+            padding: 0 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            font: inherit;
+            font-weight: 800;
+        }
+
+        .subtopic-trigger {
+            min-height: 38px;
+            margin-left: 14px;
+            background: #fafbfc;
+            font-size: 13px;
+        }
+
+        .universe-trigger:hover,
+        .subtopic-trigger.active {
+            border-color: var(--blue);
+            background: #eef4ff;
+            color: var(--blue);
+        }
+
+        .subtopic-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-left: 24px;
+            padding: 2px 0 6px;
+        }
+
+        .subtopic-list form {
+            display: inline-flex;
+        }
+
+        .subtopic-chip {
+            min-height: 30px;
+            padding: 0 9px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            font: inherit;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .chat-box {
+            display: grid;
+            grid-template-rows: auto minmax(260px, 46vh) auto;
+            overflow: hidden;
+        }
+
+        .chat-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--line);
+            font-weight: 800;
+        }
+
+        .live {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #1f8f61;
+            font-size: 12px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #1f8f61;
+        }
+
+        .messages {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            padding: 14px;
+            background: #fafbfc;
+        }
+
+        .message {
+            max-width: 90%;
+            padding: 9px 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .message.real {
+            border-color: #bcd3ff;
+            background: #eef4ff;
+        }
+
+        .message img {
+            display: block;
+            width: 100%;
+            max-height: 260px;
+            margin-top: 8px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .sender {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .chat-form {
+            display: grid;
+            gap: 8px;
+            padding: 10px;
+            border-top: 1px solid var(--line);
+        }
+
+        .identity-toggle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .identity-toggle label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .identity-toggle input {
+            width: auto;
+            margin: 0 6px 0 0;
+        }
+
+        .chat-row {
+            display: grid;
+            grid-template-columns: 1fr auto 42px;
+            gap: 8px;
+        }
+
+        .chat-form input[type="text"] {
+            min-width: 0;
+            height: 38px;
+            padding: 0 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font: inherit;
+        }
+
+        .send,
+        .file-button {
+            display: grid;
+            place-items: center;
+            width: 42px;
+            height: 38px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .send {
+            border: 0;
+            background: var(--ink);
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .file-button {
+            position: relative;
+            border: 1px solid var(--line);
+            background: #fff;
+        }
+
+        .folder-icon {
+            position: relative;
+            display: block;
+            width: 22px;
+            height: 16px;
+            border: 2px solid currentColor;
+            border-radius: 4px;
+            background: #fff;
+        }
+
+        .folder-icon::before {
+            content: "";
+            position: absolute;
+            left: 2px;
+            top: -7px;
+            width: 10px;
+            height: 7px;
+            border: 2px solid currentColor;
+            border-bottom: 0;
+            border-radius: 4px 4px 0 0;
+            background: #fff;
+        }
+
+        .file-button input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .profile-head {
+            position: relative;
+            display: grid;
+            grid-template-columns: 104px 1fr;
+            gap: 22px;
+            align-items: start;
+            padding: 22px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .avatar {
+            position: relative;
+            width: 104px;
+            height: 104px;
+            border: 0;
+            border-radius: 50%;
+            font-size: 36px;
+            overflow: hidden;
+            cursor: default;
+        }
+
+        .avatar img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar.editable {
+            cursor: pointer;
+        }
+
+        .avatar-overlay {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            padding: 14px;
+            background: rgba(22, 24, 29, 0.72);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.25;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.16s ease;
+        }
+
+        .avatar.editable:hover .avatar-overlay,
+        .avatar.editable:focus-within .avatar-overlay {
+            opacity: 1;
+        }
+
+        .avatar input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .stat-button {
+            border: 0;
+            background: transparent;
+            color: var(--ink);
+            cursor: pointer;
+            font: inherit;
+            font-weight: 800;
+            padding: 0;
+        }
+
+        .stat-button:hover {
+            color: var(--blue);
+        }
+
+        .subscriber-panel {
+            display: none;
+            grid-column: 1 / -1;
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid var(--line);
+        }
+
+        .subscriber-panel.active {
+            display: block;
+        }
+
+        .subscriber-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .subscriber-head h2 {
+            margin: 0;
+            font-size: 15px;
+        }
+
+        .subscriber-sort {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 6px;
+        }
+
+        .sort-link {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 0 9px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .sort-link.active {
+            border-color: var(--blue);
+            background: #eef4ff;
+            color: var(--blue);
+        }
+
+        .subscriber-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .subscriber-row {
+            display: grid;
+            grid-template-columns: 38px minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: center;
+            padding: 9px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fafbfc;
+        }
+
+        .subscriber-avatar {
+            display: grid;
+            place-items: center;
+            width: 38px;
+            height: 38px;
+            overflow: hidden;
+            border-radius: 50%;
+            background: var(--ink);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .subscriber-avatar img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .subscriber-name strong,
+        .subscriber-name span {
+            display: block;
+        }
+
+        .subscriber-name strong {
+            font-size: 14px;
+        }
+
+        .subscriber-name span,
+        .subscriber-meta {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .profile-action {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+        }
+
+        .button.primary {
+            border-color: var(--accent);
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .button.subscribed {
+            border-color: var(--blue);
+            background: #eef4ff;
+            color: var(--blue);
+        }
+
+        .icon-button {
+            display: inline-grid;
+            place-items: center;
+            width: 36px;
+            height: 34px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            font: inherit;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .icon-button.active {
+            border-color: var(--blue);
+            background: #eef4ff;
+            color: var(--blue);
+        }
+
+        .bio-line {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 8px;
+            align-items: start;
+            margin: 10px 0 0;
+        }
+
+        .bio-line .muted {
+            margin: 0;
+        }
+
+        .text-link {
+            border: 0;
+            background: transparent;
+            color: var(--blue);
+            cursor: pointer;
+            font: inherit;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 2px 0;
+        }
+
+        .bio-edit {
+            display: none;
+            grid-column: 1 / -1;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 8px;
+            margin-top: 2px;
+        }
+
+        .bio-edit.active {
+            display: grid;
+        }
+
+        .bio-edit input {
+            min-width: 0;
+            height: 36px;
+            padding: 0 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--soft);
+            color: var(--ink);
+            font: inherit;
+            font-size: 14px;
+        }
+
+        .feed {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .feed-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .feed-toolbar h2 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .view-switcher {
+            display: inline-flex;
+            gap: 6px;
+            padding: 4px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .feed.view-frame {
+            grid-template-columns: 1fr;
+        }
+
+        .feed.view-list {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .tile {
+            min-height: 210px;
+            padding: 14px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background:
+                linear-gradient(135deg, rgba(229, 72, 77, 0.92), rgba(37, 99, 235, 0.88)),
+                repeating-linear-gradient(45deg, transparent 0 18px, rgba(255,255,255,0.18) 18px 19px);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .tile:focus {
+            outline: 3px solid rgba(37, 99, 235, 0.28);
+            outline-offset: 2px;
+        }
+
+        .feed.view-frame .tile {
+            min-height: 360px;
+            padding: 18px;
+        }
+
+        .feed.view-frame .tile h2 {
+            font-size: 28px;
+        }
+
+        .feed.view-frame .tile p {
+            max-width: 720px;
+            font-size: 15px;
+        }
+
+        .feed.view-list .tile {
+            min-height: 0;
+            padding: 12px 14px;
+            border-color: var(--line);
+            background: #fff;
+            color: var(--ink);
+        }
+
+        .feed.view-list .tile p,
+        .feed.view-list .tile-media,
+        .feed.view-list .tile span {
+            display: none;
+        }
+
+        .feed.view-list .tile h2 {
+            font-size: 15px;
+            line-height: 1.35;
+        }
+
+        .tile h2 {
+            margin: 0;
+            font-size: 22px;
+            line-height: 1.18;
+            word-break: keep-all;
+        }
+
+        .tile p {
+            margin: 12px 0 0;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .tile span {
+            display: block;
+            margin-top: 18px;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .empty {
+            margin-top: 18px;
+            padding: 22px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--muted);
+        }
+
+        .composer {
+            margin-top: 18px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .composer-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--line);
+            background: #fafbfc;
+        }
+
+        .composer-head strong {
+            font-size: 14px;
+        }
+
+        .composer-body {
+            padding: 14px;
+        }
+
+        .composer input,
+        .composer textarea {
+            width: 100%;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            color: var(--ink);
+            font: inherit;
+        }
+
+        .composer input {
+            height: 42px;
+            padding: 0;
+            margin-bottom: 4px;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .composer textarea {
+            min-height: 110px;
+            padding: 8px 0 0;
+            resize: vertical;
+        }
+
+        .composer input:focus,
+        .composer textarea:focus {
+            outline: 0;
+        }
+
+        .composer-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--line);
+        }
+
+        .media-upload {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin: 12px 0;
+        }
+
+        .media-upload input {
+            width: auto;
+            height: auto;
+            padding: 8px;
+            margin: 0;
+            background: #fff;
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        .media-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 36px;
+            padding: 0 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .media-pill input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .tile-media {
+            margin: -14px -14px 12px;
+            background: #111;
+        }
+
+        .tile-media img,
+        .tile-media video {
+            display: block;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+        }
+
+        button.button {
+            cursor: pointer;
+            font: inherit;
+        }
+
+        @media (max-width: 760px) {
+            .topbar { padding: 12px; }
+            .layout { grid-template-columns: 1fr; padding: 12px; }
+            .rail,
+            .chat { position: static; }
+            .chat-box { grid-template-rows: auto 260px auto; }
+            .profile-head { grid-template-columns: 1fr; }
+            .profile-action { position: static; justify-self: start; }
+            .bio-edit { grid-template-columns: 1fr; }
+            .subscriber-head { align-items: flex-start; flex-direction: column; }
+            .subscriber-row { grid-template-columns: 38px minmax(0, 1fr); }
+            .subscriber-meta { grid-column: 2; }
+            .feed-toolbar { align-items: flex-start; flex-direction: column; }
+            .feed { grid-template-columns: 1fr; }
+            .feed.view-frame .tile { min-height: 300px; }
+            .avatar { width: 82px; height: 82px; font-size: 28px; }
+        }
+
+        @media (min-width: 761px) and (max-width: 1180px) {
+            .layout {
+                grid-template-columns: minmax(260px, 320px) minmax(420px, 1fr);
+            }
+
+            .chat {
+                grid-column: 1 / -1;
+                position: static;
+            }
+
+            .chat-box {
+                grid-template-rows: auto 260px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="{% url 'home' %}">
+            <img class="brand-logo" src="{% static 'posts/orbix-logo.png' %}?v=20260502b" alt="" aria-hidden="true">
+            <span class="brand-wordmark">Orbix</span>
+        </a>
+        <a class="button" href="{% url 'home' %}">홈으로</a>
+    </header>
+
+    <main class="layout">
+        <aside class="rail">
+            <section class="panel">
+                <h2 class="section-title">나의 궤도를 만들어보세요</h2>
+                <p class="orbit-copy">클릭 한 번으로 만들어지는 나의 세계</p>
+                <form class="board-search-form" id="board-search-form" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="create_board">
+                    <input type="hidden" name="category_id" value="{{ board_search_category.id }}">
+                    <input class="board-search" id="board-search" name="board_name" type="search" placeholder="만들고 싶은 궤도 이름을 입력하세요" autocomplete="off" autocapitalize="off" spellcheck="false">
+                    <button class="board-search-button" type="submit" title="검색">⌕</button>
+                </form>
+            </section>
+
+            <section class="panel">
+                <h2 class="section-title">Topic Map</h2>
+                <p class="metric">생성된 게시판 {{ board_count }}개. 관심사를 열고 새 공간을 시작하세요.</p>
+                <div class="universe-list">
+                    {% for major in category_tree %}
+                        <div class="topic-branch">
+                            <button class="universe-trigger" type="button" data-major-id="{{ major.category.id }}" data-topic-toggle="topic-branch-{{ major.category.id }}">
+                                <span>{{ major.category.name }}</span>
+                                <span class="hint">{{ major.children|length }}개 은하</span>
+                            </button>
+                            <div class="topic-branch hidden" id="topic-branch-{{ major.category.id }}">
+                                {% for child in major.children %}
+                                    <button class="subtopic-trigger" type="button" data-subtopic-toggle="subtopic-list-{{ child.category.id }}" data-category-id="{{ child.category.id }}">
+                                        <span>{{ child.category.name }}</span>
+                                        <span class="hint">{{ child.presets|length }}개</span>
+                                    </button>
+                                    <div class="subtopic-list hidden" id="subtopic-list-{{ child.category.id }}">
+                                        {% for preset in child.presets %}
+                                            <form method="post">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="create_board">
+                                                <input type="hidden" name="category_id" value="{{ child.category.id }}">
+                                                <input type="hidden" name="board_name" value="{{ preset.name }}">
+                                                <button class="subtopic-chip" type="submit">{{ preset.name }}</button>
+                                            </form>
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="panel topic-boards-panel hidden" id="topic-boards-panel">
+                <h2 class="section-title">Boards</h2>
+                <p class="metric" id="topic-boards-title">대분류에 속한 게시판입니다.</p>
+                {% for major in category_tree %}
+                        <div class="scroll-panel topic-board-group hidden" data-major-board-group="{{ major.category.id }}" data-major-name="{{ major.category.name }}">
+                            {% for child in major.children %}
+                            {% for board_item in child.boards %}
+                                <a class="board-row" href="/?board={{ board_item.board.slug }}" data-board-name="{{ board_item.board.name }} {{ major.category.name }} {{ child.category.name }}">
+                                    {{ board_item.board.name }}
+                                    <span>{{ major.category.name }} > {{ child.category.name }}</span>
+                                </a>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </section>
+
+            <section class="panel">
+                <h2 class="section-title">Popular Boards</h2>
+                <p class="metric">게시글과 채팅이 많은 게시판 TOP 10입니다.</p>
+                <div class="scroll-panel">
+                    {% for board in popular_boards %}
+                        <a class="board-row" href="/?board={{ board.slug }}" data-board-name="{{ board.name }} {{ board.category.parent.name }} {{ board.category.name }}">
+                            {{ board.name }}
+                            <span>{{ board.category.parent.name }} > {{ board.category.name }} · 글 {{ board.post_count }} · 채팅 {{ board.chat_count }}</span>
+                        </a>
+                    {% empty %}
+                        <div class="board-row">
+                            아직 생성된 게시판이 없습니다.
+                            <span>대분류를 열어 첫 공간을 만들어보세요.</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </aside>
+
+        <section class="profile-main" aria-label="개인 피드">
+            <section class="profile-head">
+            {% if user == feed_user %}
+                <form class="avatar editable" id="profile-photo-form" method="post" enctype="multipart/form-data" title="프로필 편집">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_profile">
+                    {% if feed_profile.photo %}
+                        <img src="{{ feed_profile.photo.url }}" alt="{{ feed_profile.display_name }}">
+                    {% else %}
+                        {{ feed_profile.display_name|first|upper }}
+                    {% endif %}
+                    <span class="avatar-overlay">프로필 편집</span>
+                    <input id="profile-photo-input" type="file" name="photo" accept="image/jpeg,image/png,image/gif,image/webp">
+                </form>
+            {% else %}
+                <div class="avatar">
+                    {% if feed_profile.photo %}
+                        <img src="{{ feed_profile.photo.url }}" alt="{{ feed_profile.display_name }}">
+                    {% else %}
+                        {{ feed_profile.display_name|first|upper }}
+                    {% endif %}
+                </div>
+            {% endif %}
+            <div>
+                <h1>{{ feed_profile.display_name }}</h1>
+                <p class="muted">@{{ feed_user.username }}</p>
+                <div class="bio-line">
+                    <p class="muted" id="bio-text">
+                        {% if feed_profile.bio %}
+                            {{ feed_profile.bio }}
+                        {% else %}
+                            주제 게시판에서 남긴 글이 이 개인 피드에 모입니다.
+                        {% endif %}
+                    </p>
+                    {% if user == feed_user %}
+                        <button class="text-link" id="bio-edit-toggle" type="button">편집</button>
+                        <form class="bio-edit" id="bio-edit-form" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="update_profile">
+                            <input type="text" name="bio" maxlength="160" value="{{ feed_profile.bio }}" placeholder="프로필 문구">
+                            <button class="button primary" type="submit">저장</button>
+                        </form>
+                    {% endif %}
+                </div>
+                <div class="stats">
+                    <strong>게시글 {{ posts|length }}</strong>
+                    <button class="stat-button" id="subscriber-toggle" type="button">구독자 {{ subscriber_count }}</button>
+                    <span class="muted">실명 채팅은 이 이름으로 표시됩니다.</span>
+                </div>
+            </div>
+            {% if user.is_authenticated and user != feed_user %}
+                <form class="profile-action" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="toggle_subscription">
+                    <button class="button {% if is_subscribed %}subscribed{% else %}primary{% endif %}" type="submit">
+                        {% if is_subscribed %}구독 중{% else %}구독{% endif %}
+                    </button>
+                </form>
+            {% elif not user.is_authenticated %}
+                <a class="button primary profile-action" href="{% url 'login' %}">구독</a>
+            {% endif %}
+            <section class="subscriber-panel {% if request.GET.subscriber_sort %}active{% endif %}" id="subscriber-panel" aria-label="구독자 목록">
+                <div class="subscriber-head">
+                    <h2>구독하는 사람</h2>
+                    <div class="subscriber-sort" aria-label="구독자 정렬">
+                        <a class="sort-link {% if subscriber_sort == 'date_desc' %}active{% endif %}" href="?subscriber_sort=date_desc">최신순</a>
+                        <a class="sort-link {% if subscriber_sort == 'name' %}active{% endif %}" href="?subscriber_sort=name">이름순</a>
+                        <a class="sort-link {% if subscriber_sort == 'date_asc' %}active{% endif %}" href="?subscriber_sort=date_asc">오래된순</a>
+                        <a class="sort-link {% if subscriber_sort == 'posts' %}active{% endif %}" href="?subscriber_sort=posts">게시글순</a>
+                    </div>
+                </div>
+                <div class="subscriber-list">
+                    {% for subscription in subscribers %}
+                        <a class="subscriber-row" href="{% url 'profile_feed' subscription.subscriber.username %}">
+                            <span class="subscriber-avatar">
+                                {% if subscription.subscriber.profile.photo %}
+                                    <img src="{{ subscription.subscriber.profile.photo.url }}" alt="{{ subscription.subscriber.profile.display_name }}">
+                                {% else %}
+                                    {{ subscription.subscriber.profile.display_name|default:subscription.subscriber.username|first|upper }}
+                                {% endif %}
+                            </span>
+                            <span class="subscriber-name">
+                                <strong>{{ subscription.subscriber.profile.display_name|default:subscription.subscriber.username }}</strong>
+                                <span>@{{ subscription.subscriber.username }}</span>
+                            </span>
+                            <span class="subscriber-meta">게시글 {{ subscription.subscriber_post_count }} · {{ subscription.created_at|date:"Y.m.d" }}</span>
+                        </a>
+                    {% empty %}
+                        <div class="empty">아직 구독자가 없습니다.</div>
+                    {% endfor %}
+                </div>
+            </section>
+        </section>
+
+        {% if user == feed_user %}
+            <form class="composer" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="composer-head">
+                    <strong>새 게시글</strong>
+                    <span class="muted">개인 피드</span>
+                </div>
+                <div class="composer-body">
+                    <input type="text" name="title" maxlength="200" placeholder="제목" required>
+                    <textarea name="content" placeholder="내 피드에 남길 이야기를 적어보세요." required></textarea>
+                    <div class="media-upload">
+                        <label class="media-pill">
+                            + 사진/영상
+                            <input type="file" name="media" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime" multiple>
+                        </label>
+                        <span class="muted">사진은 최대 20장, 3MB 초과 사진은 자동 압축됩니다.</span>
+                    </div>
+                    <div class="composer-actions">
+                        <span class="muted">여기서 올린 글은 내 개인 피드에 바로 표시됩니다.</span>
+                        <button class="button primary" type="submit">게시</button>
+                    </div>
+                </div>
+            </form>
+        {% endif %}
+
+        {% if posts %}
+            <div class="feed-toolbar">
+                <h2>게시글</h2>
+                <div class="view-switcher" aria-label="게시글 보기 방식">
+                    <button class="icon-button active" type="button" data-feed-view="grid" title="격자형">▦</button>
+                    <button class="icon-button" type="button" data-feed-view="frame" title="액자형">▤</button>
+                    <button class="icon-button" type="button" data-feed-view="list" title="목록형">☰</button>
+                </div>
+            </div>
+            <section class="feed view-grid" id="profile-feed" aria-label="개인 피드 게시글">
+                {% for post in posts %}
+                    <article class="tile" data-post-url="{% url 'post_detail' post.id %}" tabindex="0">
+                        <div>
+                            {% with first_media=post.media.all|first %}
+                                {% if first_media %}
+                                    <div class="tile-media">
+                                        {% if first_media.media_type == 'image' %}
+                                            <img src="{{ first_media.file.url }}" alt="{{ post.title }}">
+                                        {% else %}
+                                            <video src="{{ first_media.file.url }}" controls></video>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endwith %}
+                            <h2>{{ post.title }}</h2>
+                            <p>{{ post.content|truncatechars:90 }}</p>
+                        </div>
+                        <span>
+                            {% if post.board %}
+                                {{ post.board.category.parent.name }} > {{ post.board.category.name }} > {{ post.board.name }}
+                            {% else %}
+                                미분류
+                            {% endif %}
+                            · {{ post.created_at|date:"Y.m.d" }}
+                        </span>
+                    </article>
+                {% endfor %}
+            </section>
+        {% else %}
+            <section class="empty">
+                아직 개인 피드에 올라온 글이 없습니다.
+            </section>
+        {% endif %}
+        </section>
+
+        <aside class="chat" aria-label="실시간 채팅">
+            <div class="chat-box">
+                <div class="chat-head">
+                    <span>전체 채팅</span>
+                    <span class="live"><span class="dot"></span>온라인</span>
+                </div>
+                <div class="messages" id="messages">
+                    {% for chat in chat_messages %}
+                        <div class="message {{ chat.identity_mode }}">
+                            <span class="sender">
+                                {% if chat.identity_mode == 'real' and chat.user %}
+                                    <a href="{% url 'profile_feed' chat.user.username %}">{{ chat.sender_name }}</a>
+                                {% else %}
+                                    익명
+                                {% endif %}
+                                {{ chat.created_at|date:"H:i" }}
+                            </span>
+                            {% if chat.message %}
+                                {{ chat.message }}
+                            {% endif %}
+                            {% if chat.image %}
+                                <img src="{{ chat.image.url }}" alt="채팅 이미지">
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <div class="message">아직 채팅이 없습니다. 익명으로 가볍게 말하거나, 개인 피드 이름으로 참여할 수 있어요.</div>
+                    {% endfor %}
+                </div>
+                <form class="chat-form" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="send_chat">
+                    <div class="identity-toggle">
+                        <label>
+                            <input type="radio" name="identity_mode" value="anonymous" checked>
+                            익명
+                        </label>
+                        <label>
+                            <input type="radio" name="identity_mode" value="real" {% if not user.is_authenticated %}disabled{% endif %}>
+                            실명{% if user.is_authenticated and profile %} · {{ profile.display_name }}{% endif %}
+                        </label>
+                    </div>
+                    <div class="chat-row">
+                        <input data-chat-message type="text" name="message" autocomplete="off" placeholder="메시지 입력">
+                        <label class="file-button" title="사진 첨부" aria-label="사진 첨부">
+                            <span class="folder-icon" aria-hidden="true"></span>
+                            <input type="file" name="image" accept="image/jpeg,image/png,image/gif,image/webp">
+                        </label>
+                        <button class="send" type="submit" title="보내기">›</button>
+                    </div>
+                    {% if not user.is_authenticated %}
+                        <span class="hint">실명 채팅은 로그인 후 사용할 수 있습니다.</span>
+                    {% endif %}
+                    <span class="hint">사진은 JPG, PNG, GIF, WebP만 가능하고 3MB까지 업로드됩니다.</span>
+                </form>
+            </div>
+        </aside>
+    </main>
+    <script>
+        const universeButtons = document.querySelectorAll("[data-major-id]");
+
+        universeButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                const topicBoardsPanel = document.querySelector("#topic-boards-panel");
+                const topicBoardsTitle = document.querySelector("#topic-boards-title");
+                const majorId = button.dataset.majorId;
+                if (topicBoardsPanel && majorId) {
+                    topicBoardsPanel.classList.remove("hidden");
+                    document.querySelectorAll("[data-major-board-group]").forEach((group) => {
+                        const isActive = group.dataset.majorBoardGroup === majorId;
+                        group.classList.toggle("hidden", !isActive);
+                        if (isActive && topicBoardsTitle) {
+                            topicBoardsTitle.textContent = `${group.dataset.majorName}에 속한 게시판입니다.`;
+                        }
+                    });
+                }
+                const branchId = button.dataset.topicToggle;
+                if (branchId) {
+                    document.querySelectorAll("[id^='topic-branch-']").forEach((branch) => {
+                        branch.classList.toggle("hidden", branch.id !== branchId);
+                    });
+                }
+            });
+        });
+
+        document.querySelectorAll("[data-subtopic-toggle]").forEach((button) => {
+            button.addEventListener("click", (event) => {
+                event.stopPropagation();
+                const targetId = button.dataset.subtopicToggle;
+                const target = document.getElementById(targetId);
+                const branch = button.closest("[id^='topic-branch-']");
+                if (!target || !branch) return;
+
+                branch.querySelectorAll(".subtopic-trigger").forEach((item) => {
+                    item.classList.toggle("active", item === button);
+                });
+                branch.querySelectorAll(".subtopic-list").forEach((list) => {
+                    list.classList.toggle("hidden", list.id !== targetId);
+                });
+            });
+        });
+
+        const boardSearch = document.querySelector("#board-search");
+        const boardSearchForm = document.querySelector("#board-search-form");
+        const boardRows = document.querySelectorAll("[data-board-name]");
+
+        function filterBoards() {
+            if (!boardSearch) return;
+            const query = boardSearch.value.trim().toLowerCase();
+            boardRows.forEach((row) => {
+                const text = row.dataset.boardName.toLowerCase();
+                row.classList.toggle("hidden", query && !text.includes(query));
+            });
+        }
+
+        if (boardSearch) {
+            boardSearch.addEventListener("input", filterBoards);
+        }
+
+        if (boardSearchForm) {
+            boardSearchForm.addEventListener("submit", (event) => {
+                event.preventDefault();
+                const orbitName = boardSearch.value.trim();
+                if (!orbitName) return;
+                const confirmed = window.confirm(`"${orbitName}" 궤도를 생성합니다.\n동일한 궤도가 있다면 기존 궤도로 입장됩니다.`);
+                if (!confirmed) return;
+                filterBoards();
+                const firstVisibleBoard = Array.from(boardRows).find((row) => !row.classList.contains("hidden") && row.offsetParent !== null);
+                if (firstVisibleBoard) {
+                    window.location.href = firstVisibleBoard.href;
+                    return;
+                }
+                boardSearchForm.submit();
+            });
+        }
+
+        const chatForm = document.querySelector(".chat-form");
+        if (chatForm) {
+            chatForm.addEventListener("submit", () => {
+                sessionStorage.setItem("orbixChatScrollY", String(window.scrollY));
+            });
+        }
+
+        if (new URLSearchParams(window.location.search).get("focus_chat") === "1") {
+            const chatMessage = document.querySelector("[data-chat-message]");
+            const savedScrollY = sessionStorage.getItem("orbixChatScrollY");
+            if (savedScrollY !== null) {
+                window.scrollTo({ top: Number(savedScrollY), left: 0, behavior: "instant" });
+                sessionStorage.removeItem("orbixChatScrollY");
+            }
+            if (chatMessage) {
+                chatMessage.focus({ preventScroll: true });
+            }
+        }
+
+        const messages = document.querySelector("#messages");
+        if (messages) {
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        if (window.location.hash === "#chat-message") {
+            history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+        }
+
+        const photoForm = document.querySelector("#profile-photo-form");
+        const photoInput = document.querySelector("#profile-photo-input");
+
+        if (photoForm && photoInput) {
+            photoForm.addEventListener("click", () => photoInput.click());
+            photoInput.addEventListener("change", () => {
+                if (photoInput.files.length) {
+                    photoForm.submit();
+                }
+            });
+        }
+
+        const bioToggle = document.querySelector("#bio-edit-toggle");
+        const bioForm = document.querySelector("#bio-edit-form");
+
+        if (bioToggle && bioForm) {
+            bioToggle.addEventListener("click", () => {
+                bioForm.classList.toggle("active");
+                const input = bioForm.querySelector("input[name='bio']");
+                if (bioForm.classList.contains("active") && input) {
+                    input.focus();
+                    input.select();
+                }
+            });
+        }
+
+        const subscriberToggle = document.querySelector("#subscriber-toggle");
+        const subscriberPanel = document.querySelector("#subscriber-panel");
+
+        if (subscriberToggle && subscriberPanel) {
+            subscriberToggle.addEventListener("click", () => {
+                subscriberPanel.classList.toggle("active");
+            });
+        }
+
+        const feed = document.querySelector("#profile-feed");
+        const viewButtons = document.querySelectorAll("[data-feed-view]");
+        const viewStorageKey = "orbix.profileFeedView";
+
+        function setFeedView(view) {
+            if (!feed) return;
+            const nextView = ["grid", "frame", "list"].includes(view) ? view : "grid";
+            feed.classList.remove("view-grid", "view-frame", "view-list");
+            feed.classList.add(`view-${nextView}`);
+            viewButtons.forEach((button) => {
+                button.classList.toggle("active", button.dataset.feedView === nextView);
+            });
+            localStorage.setItem(viewStorageKey, nextView);
+        }
+
+        if (feed && viewButtons.length) {
+            setFeedView(localStorage.getItem(viewStorageKey) || "grid");
+            viewButtons.forEach((button) => {
+                button.addEventListener("click", () => setFeedView(button.dataset.feedView));
+            });
+        }
+
+        document.querySelectorAll("[data-post-url]").forEach((post) => {
+            post.addEventListener("click", (event) => {
+                if (event.target.closest("video, a, button, input, textarea, select")) return;
+                window.location.href = post.dataset.postUrl;
+            });
+            post.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") {
+                    window.location.href = post.dataset.postUrl;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

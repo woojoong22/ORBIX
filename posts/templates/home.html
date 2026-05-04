@@ -1,0 +1,1945 @@
+﻿<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbix</title>
+    <style>
+        :root {
+            --ink: #17191f;
+            --muted: #667085;
+            --line: #d8e0ec;
+            --panel: #ffffff;
+            --soft: #f7f9fd;
+            --accent: #e5484d;
+            --green: #1f8f61;
+            --blue: #2563eb;
+            --cyan: #0891b2;
+            --violet: #8b5cf6;
+            --amber: #b46a14;
+            --rose-soft: #fff2f2;
+            --blue-soft: #eef4ff;
+            --cyan-soft: #ecfeff;
+            --violet-soft: #f5f3ff;
+            --amber-soft: #fff8e7;
+            --shadow: 0 16px 42px rgba(25, 31, 44, 0.09);
+            --shadow-soft: 0 8px 22px rgba(25, 31, 44, 0.06);
+            --side-sticky-top: 184px;
+            --content-grid-max: 1440px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background:
+                linear-gradient(135deg, rgba(20, 184, 255, 0.11) 0%, rgba(255, 255, 255, 0) 34%),
+                linear-gradient(225deg, rgba(139, 92, 246, 0.11) 0%, rgba(255, 255, 255, 0) 36%),
+                linear-gradient(180deg, #fbfcff 0%, #eef4f9 56%, #e7edf5 100%);
+            color: var(--ink);
+            font-family: Arial, "Noto Sans KR", sans-serif;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: 240px minmax(220px, 1fr) auto;
+            gap: 16px;
+            align-items: center;
+            min-height: 64px;
+            padding: 0 24px;
+            border-bottom: 1px solid rgba(216, 224, 236, 0.78);
+            background:
+                linear-gradient(90deg, rgba(255, 255, 255, 0.95), rgba(248, 251, 255, 0.9)),
+                rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 28px rgba(25, 31, 44, 0.05);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 20px;
+        }
+
+        .brand-logo {
+            display: block;
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            object-fit: cover;
+            box-shadow: 0 8px 22px rgba(22, 24, 29, 0.18);
+        }
+
+        .brand-wordmark {
+            background: linear-gradient(100deg, #14b8ff 0%, #4763ff 45%, #d946ef 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .brand-mark,
+        .avatar {
+            display: grid;
+            place-items: center;
+            background: var(--ink);
+            color: #fff;
+            font-weight: 800;
+        }
+
+        .brand-mark {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            box-shadow: 0 8px 22px rgba(22, 24, 29, 0.18);
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            flex: 0 0 auto;
+        }
+
+        .search {
+            width: 100%;
+            max-width: 620px;
+            height: 40px;
+            padding: 0 16px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.86);
+            color: var(--ink);
+            font-size: 14px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), var(--shadow-soft);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .search:focus {
+            outline: 0;
+            border-color: rgba(37, 99, 235, 0.58);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), var(--shadow-soft);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 0 14px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.92);
+            color: var(--ink);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 5px 14px rgba(25, 31, 44, 0.04);
+            transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .button:hover {
+            border-color: #c7d1df;
+            transform: translateY(-1px);
+        }
+
+        .button.primary {
+            border-color: transparent;
+            background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 52%, #d946ef 100%);
+            color: #fff;
+            box-shadow: 0 10px 22px rgba(99, 102, 241, 0.24);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(150px, 260px) minmax(460px, 760px) minmax(320px, 380px);
+            gap: 20px;
+            width: min(1540px, 100%);
+            margin: 0 auto;
+            padding: 20px 24px 36px;
+            min-height: 520px;
+        }
+
+        .left-rail {
+            min-width: 0;
+        }
+
+        .left-rail .summary-grid {
+            position: sticky;
+            top: var(--side-sticky-top);
+            z-index: 6;
+            grid-template-columns: 1fr;
+            min-height: calc(100vh - var(--side-sticky-top) - 16px);
+            max-height: calc(100vh - var(--side-sticky-top) - 16px);
+            overflow-y: auto;
+            margin-top: 0;
+            padding-right: 4px;
+            overscroll-behavior: contain;
+        }
+
+        .left-rail .summary-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .left-rail .summary-grid::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            background: #c6ccd7;
+        }
+
+        .feed-column {
+            min-height: 0;
+            padding-right: 6px;
+            overscroll-behavior: contain;
+        }
+
+        .feed-column::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .feed-column::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            background: #c6ccd7;
+        }
+
+        .chat {
+            position: sticky;
+            top: var(--side-sticky-top);
+            z-index: 6;
+            align-self: start;
+            max-height: calc(100vh - var(--side-sticky-top) - 16px);
+            overflow-y: auto;
+            padding-right: 4px;
+            overscroll-behavior: contain;
+        }
+
+        .chat::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            background: #c6ccd7;
+        }
+
+        .panel,
+        .post,
+        .chat-box {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel);
+            box-shadow: var(--shadow);
+        }
+
+        .post,
+        .composer,
+        .summary-panel,
+        .chat-box,
+        .topic-shell {
+            position: relative;
+        }
+
+        .post::before,
+        .composer::before,
+        .summary-panel::before,
+        .chat-box::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto;
+            height: 3px;
+            background: linear-gradient(90deg, #14b8ff, #6366f1, #d946ef);
+            opacity: 0.9;
+            pointer-events: none;
+        }
+
+        .panel { padding: 14px; margin-bottom: 14px; }
+
+        .topic-header {
+            position: sticky;
+            top: 64px;
+            z-index: 8;
+            width: min(1540px, 100%);
+            margin: 0 auto;
+            padding: 10px 24px 0;
+            background: transparent;
+            backdrop-filter: blur(14px);
+        }
+
+        .topic-shell {
+            width: min(var(--content-grid-max), 100%);
+            padding: 10px;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .topic-topline {
+            display: block;
+        }
+
+        .topic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(98px, 1fr));
+            gap: 8px;
+        }
+
+        .topic-card {
+            display: grid;
+            place-items: center;
+            gap: 4px;
+            min-height: 58px;
+            padding: 7px 6px;
+            border: 1px solid #d9e1ec;
+            border-radius: 8px;
+            background:
+                linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            color: var(--ink);
+            font-size: 13px;
+            font-weight: 800;
+            text-align: center;
+            box-shadow: 0 7px 18px rgba(25, 31, 44, 0.05);
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+        }
+
+        .topic-card:hover,
+        .topic-card.active {
+            border-color: rgba(37, 99, 235, 0.62);
+            background: linear-gradient(180deg, #eff6ff 0%, #eef2ff 100%);
+            color: var(--blue);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(37, 99, 235, 0.14);
+        }
+
+        .topic-card.back {
+            border-style: dashed;
+            background: #fff;
+            color: var(--muted);
+        }
+
+        .topic-card.back:hover {
+            color: var(--blue);
+        }
+
+        .topic-icon {
+            display: grid;
+            place-items: center;
+            width: 28px;
+            height: 28px;
+            border: 1px solid rgba(203, 213, 225, 0.82);
+            border-radius: 8px;
+            background: linear-gradient(135deg, #f8fbff 0%, #eef6ff 48%, #f7f2ff 100%);
+            font-size: 17px;
+            line-height: 1;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84);
+        }
+
+        .subtopic-strip {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: minmax(92px, 116px);
+            grid-template-columns: none;
+            gap: 7px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--line);
+            overscroll-behavior-x: contain;
+            scrollbar-width: thin;
+        }
+
+        .subtopic-strip form {
+            display: inline-grid;
+        }
+
+        .subtopic-pill {
+            display: grid;
+            place-items: center;
+            gap: 4px;
+            min-height: 46px;
+            padding: 6px;
+            border: 1px solid #d9e1ec;
+            border-radius: 8px;
+            background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+            color: var(--ink);
+            font-size: 13px;
+            font-weight: 800;
+            text-align: center;
+            box-shadow: 0 6px 16px rgba(25, 31, 44, 0.04);
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+        }
+
+        button.subtopic-pill {
+            width: 100%;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .subtopic-pill.active,
+        .subtopic-pill:hover {
+            border-color: rgba(8, 145, 178, 0.62);
+            background: linear-gradient(180deg, #ecfeff 0%, #eef4ff 100%);
+            color: var(--blue);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(37, 99, 235, 0.12);
+        }
+
+        .subtopic-pill.selected-board {
+            border-color: #f2c94c;
+            background: #fff9df;
+            color: #7a4b00;
+            box-shadow: 0 10px 24px rgba(242, 201, 76, 0.24);
+        }
+
+        .subtopic-icon {
+            display: grid;
+            place-items: center;
+            width: 24px;
+            height: 24px;
+            border: 1px solid rgba(203, 213, 225, 0.78);
+            border-radius: 8px;
+            background: linear-gradient(135deg, #f8fbff 0%, #eef6ff 52%, #fff7ed 100%);
+            font-size: 15px;
+            line-height: 1;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+        }
+
+        .topic-board-strip {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: minmax(84px, 110px);
+            grid-template-columns: none;
+            gap: 8px;
+            margin-top: 10px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            overscroll-behavior-x: contain;
+            scrollbar-width: thin;
+        }
+
+        .topic-board-strip:empty {
+            display: none;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .summary-panel {
+            min-width: 0;
+            padding: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(216, 224, 236, 0.94);
+            border-radius: 8px;
+            background:
+                linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+            box-shadow: var(--shadow);
+        }
+
+        .summary-panel .section-title {
+            margin-bottom: 8px;
+        }
+
+        .compact-list {
+            display: grid;
+            gap: 6px;
+            counter-reset: compact-rank;
+        }
+
+        .compact-row {
+            display: grid;
+            position: relative;
+            gap: 2px;
+            min-width: 0;
+            padding: 9px 8px 9px 34px;
+            border-radius: 8px;
+            background: rgba(247, 249, 253, 0.72);
+            font-size: 12px;
+            font-weight: 800;
+            transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+        }
+
+        .compact-row::before {
+            counter-increment: compact-rank;
+            content: counter(compact-rank);
+            position: absolute;
+            left: 8px;
+            top: 10px;
+            display: grid;
+            place-items: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #14b8ff, #8b5cf6);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 900;
+        }
+
+        .compact-row:hover {
+            background: #eef4ff;
+            color: var(--blue);
+            transform: translateX(2px);
+        }
+
+        .compact-row span {
+            overflow: hidden;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .section-title {
+            margin: 0 0 12px;
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .metric,
+        .hint {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .metric { margin: 0 0 14px; }
+
+        .profile-card,
+        .mini-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-card {
+            padding: 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .profile-card strong,
+        .mini-profile strong {
+            display: block;
+            font-size: 14px;
+        }
+
+        .profile-card span,
+        .mini-profile span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .people-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .mini-profile {
+            min-height: 44px;
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .mini-profile:hover {
+            background: var(--soft);
+        }
+
+        .mini-profile .avatar {
+            width: 32px;
+            height: 32px;
+            font-size: 13px;
+        }
+
+        .universe-list {
+            display: grid;
+            gap: 10px;
+            max-height: none;
+            overflow: visible;
+            padding-right: 4px;
+            overscroll-behavior: contain;
+        }
+
+        .scroll-panel {
+            display: grid;
+            gap: 8px;
+            max-height: 260px;
+            overflow-y: auto;
+            padding-right: 4px;
+            overscroll-behavior: contain;
+        }
+
+        .scroll-panel::-webkit-scrollbar,
+        .universe-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .scroll-panel::-webkit-scrollbar-thumb,
+        .universe-list::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            background: #c6ccd7;
+        }
+
+        .board-row {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding: 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .board-row:hover,
+        .board-row.active {
+            border-color: var(--blue);
+            background: #eef4ff;
+        }
+
+        .board-row span {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .board-search {
+            width: 100%;
+            height: 44px;
+            padding: 0 15px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.92);
+            color: var(--ink);
+            font: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        }
+
+        .board-search-panel {
+            display: grid;
+            grid-template-columns: minmax(180px, 260px) minmax(260px, 1fr);
+            gap: 14px;
+            align-items: end;
+            margin-top: 14px;
+            padding: 0;
+            border-top: 0;
+            border-radius: 0;
+            background: transparent;
+        }
+
+        .board-search-panel .section-title {
+            margin-bottom: 7px;
+        }
+
+        .orbit-copy {
+            margin: 0;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.45;
+        }
+
+        .board-search-form {
+            display: grid;
+            grid-template-columns: 1fr 46px;
+            gap: 8px;
+        }
+
+        .board-search-button {
+            display: grid;
+            place-items: center;
+            width: 46px;
+            height: 44px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: linear-gradient(135deg, #111827, #2563eb);
+            color: #fff;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 800;
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+
+        .board-search-button:hover {
+            background: var(--blue);
+            transform: translateY(-1px);
+        }
+
+        .board-row.hidden {
+            display: none;
+        }
+
+        .topic-boards-panel.hidden,
+        .topic-board-group.hidden {
+            display: none;
+        }
+
+        .universe-trigger {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            min-height: 48px;
+            padding: 0 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            font: inherit;
+            font-weight: 800;
+        }
+
+        .universe-trigger:hover,
+        .universe-trigger.active {
+            border-color: var(--blue);
+            background: #eef4ff;
+            color: var(--blue);
+        }
+
+        .topic-branch {
+            display: grid;
+            gap: 8px;
+        }
+
+        .topic-branch.hidden,
+        .subtopic-list.hidden {
+            display: none;
+        }
+
+        .subtopic-trigger {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 38px;
+            margin-left: 14px;
+            padding: 0 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fafbfc;
+            color: var(--ink);
+            cursor: pointer;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .subtopic-toggle {
+            display: grid;
+            place-items: center;
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--muted);
+            cursor: pointer;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .subtopic-trigger.active {
+            border-color: var(--blue);
+            background: #eef4ff;
+            color: var(--blue);
+        }
+
+        .subtopic-trigger.active .subtopic-toggle {
+            border-color: var(--blue);
+            color: var(--blue);
+        }
+
+        .subtopic-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-left: 24px;
+            padding: 2px 0 6px;
+        }
+
+        .subtopic-list form {
+            display: inline-flex;
+        }
+
+        .subtopic-chip {
+            display: grid;
+            place-items: center;
+            gap: 4px;
+            min-height: 50px;
+            padding: 8px 7px;
+            border: 1px solid #d9e1ec;
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            font: inherit;
+            font-size: 12px;
+            font-weight: 800;
+            text-align: center;
+            transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+
+        .subtopic-chip.active,
+        .subtopic-chip:hover {
+            border-color: var(--blue);
+            background: #eef4ff;
+            color: var(--blue);
+            transform: translateY(-1px);
+        }
+
+        .board-chip-icon {
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .category-tree {
+            display: grid;
+            gap: 12px;
+        }
+
+        details {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        summary {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            cursor: pointer;
+            font-weight: 800;
+        }
+
+        .subcategory {
+            padding: 10px 12px 12px;
+            border-top: 1px solid var(--line);
+            background: #fafbfc;
+        }
+
+        .subcategory h3 {
+            margin: 0 0 8px;
+            font-size: 14px;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .chip {
+            min-height: 30px;
+            padding: 0 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .chip.active {
+            border-color: var(--blue);
+            background: #eef4ff;
+            color: var(--blue);
+        }
+
+        .quick-create {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .quick-create input,
+        .composer input,
+        .composer textarea,
+        .chat-form input {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font: inherit;
+        }
+
+        .quick-create input {
+            min-width: 0;
+            height: 34px;
+            padding: 0 10px;
+        }
+
+        .feed-heading {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 2px 0 14px;
+            padding: 12px 14px;
+            border: 1px solid rgba(216, 224, 236, 0.9);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.78);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .feed-heading h1 {
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 0;
+            background: linear-gradient(100deg, #111827, #2563eb 55%, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .feed-heading p {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .composer {
+            margin-bottom: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(216, 224, 236, 0.94);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: var(--shadow);
+        }
+
+        .composer-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--line);
+            background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 55%, #f5f3ff 100%);
+        }
+
+        .composer-head strong {
+            font-size: 14px;
+        }
+
+        .composer-body {
+            padding: 14px;
+        }
+
+        .composer input,
+        .composer textarea {
+            width: 100%;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            color: var(--ink);
+        }
+
+        .composer input {
+            height: 42px;
+            padding: 0;
+            margin-bottom: 4px;
+            font-weight: 700;
+            font-size: 19px;
+        }
+
+        .composer textarea {
+            min-height: 110px;
+            padding: 8px 0 0;
+            resize: vertical;
+        }
+
+        .composer input:focus,
+        .composer textarea:focus {
+            outline: 0;
+        }
+
+        .composer-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--line);
+        }
+
+        .media-upload {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin: 12px 0;
+        }
+
+        .media-upload input {
+            width: auto;
+            height: auto;
+            padding: 8px;
+            margin: 0;
+            background: #fff;
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        .media-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 36px;
+            padding: 0 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 800;
+            transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+        }
+
+        .media-pill:hover {
+            border-color: var(--blue);
+            background: var(--blue-soft);
+            transform: translateY(-1px);
+        }
+
+        .media-pill input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .feed {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            align-items: start;
+        }
+
+        .post {
+            min-width: 0;
+            overflow: hidden;
+            border-color: rgba(216, 224, 236, 0.94);
+            background: rgba(255, 255, 255, 0.97);
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+        }
+
+        .post:hover {
+            border-color: #cbd6e4;
+            box-shadow: 0 18px 42px rgba(25, 31, 44, 0.11);
+            transform: translateY(-2px);
+        }
+
+        .post-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 14px 10px;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+        }
+
+        .meta strong {
+            display: block;
+            font-size: 15px;
+            overflow-wrap: anywhere;
+        }
+
+        .meta span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .post-media {
+            display: grid;
+            place-items: center;
+            min-height: 170px;
+            padding: 22px;
+            background:
+                linear-gradient(135deg, rgba(8, 145, 178, 0.9), rgba(37, 99, 235, 0.86), rgba(139, 92, 246, 0.88)),
+                repeating-linear-gradient(45deg, transparent 0 18px, rgba(255,255,255,0.18) 18px 19px);
+            color: #fff;
+            text-align: center;
+        }
+
+        .post-media.has-files {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 2px;
+            min-height: 0;
+            padding: 0;
+            background: #111;
+        }
+
+        .post-media.has-files img,
+        .post-media.has-files video {
+            display: block;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            background: #111;
+        }
+
+        .post-media.has-files .single-media {
+            grid-column: 1 / -1;
+        }
+
+        .post-media.has-files .single-media img,
+        .post-media.has-files .single-media video {
+            aspect-ratio: 16 / 10;
+        }
+
+        .post-media h2 {
+            max-width: 100%;
+            margin: 0;
+            font-size: 28px;
+            line-height: 1.1;
+            word-break: keep-all;
+        }
+
+        .post-body {
+            padding: 14px;
+            border-top: 1px solid rgba(216, 224, 236, 0.56);
+        }
+
+        .post-body p {
+            margin: 0;
+            color: #333841;
+            line-height: 1.65;
+            word-break: keep-all;
+            overflow-wrap: anywhere;
+        }
+
+        .post-tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 0 14px 14px;
+        }
+
+        .post-tools form {
+            display: inline-flex;
+        }
+
+        .icon-button {
+            display: inline-grid;
+            place-items: center;
+            min-width: 38px;
+            height: 34px;
+            padding: 0 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #ffffff;
+            color: var(--ink);
+            cursor: pointer;
+            font: inherit;
+            font-size: 16px;
+            box-shadow: 0 6px 14px rgba(25, 31, 44, 0.04);
+            transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+
+        .icon-button:hover,
+        .icon-button.active {
+            border-color: var(--blue);
+            background: var(--blue-soft);
+            color: var(--blue);
+        }
+
+        .chat-box {
+            display: grid;
+            grid-template-rows: auto minmax(0, 1fr) auto;
+            height: min(600px, calc(100vh - var(--side-sticky-top) - 24px));
+            min-height: 480px;
+            overflow: hidden;
+            border-color: rgba(216, 224, 236, 0.94);
+            box-shadow: var(--shadow);
+        }
+
+        .chat-head {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--line);
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #ecfeff 45%, #f5f3ff 100%);
+        }
+
+        .chat-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .chat-tab {
+            display: inline-flex;
+            align-items: center;
+            min-height: 28px;
+            padding: 0 9px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.86);
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+            transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+
+        .chat-tab.active {
+            border-color: rgba(37, 99, 235, 0.52);
+            background: linear-gradient(135deg, #eef4ff, #f5f3ff);
+            color: var(--blue);
+        }
+
+        .private-chat-picker {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .private-chat-picker select {
+            min-width: 0;
+            height: 32px;
+            padding: 0 8px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            font: inherit;
+            font-size: 12px;
+        }
+
+        .live {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--green);
+            font-size: 12px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 0 4px rgba(31, 143, 97, 0.12);
+        }
+
+        .messages {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            padding: 12px;
+            background:
+                linear-gradient(180deg, #f8fbff 0%, #f4f7fb 100%);
+        }
+
+        .message {
+            max-width: 90%;
+            padding: 8px 9px;
+            border-radius: 8px;
+            background: #fff;
+            border: 1px solid var(--line);
+            font-size: 13px;
+            line-height: 1.45;
+            box-shadow: 0 6px 18px rgba(25, 31, 44, 0.04);
+        }
+
+        .message img {
+            display: block;
+            width: 100%;
+            max-height: 260px;
+            margin-top: 8px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .message.real {
+            border-color: #bcd3ff;
+            background: linear-gradient(135deg, #eef4ff, #f5f3ff);
+        }
+
+        .sender {
+            display: block;
+            overflow: hidden;
+            margin-bottom: 3px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chat-form {
+            display: grid;
+            gap: 8px;
+            padding: 10px;
+            border-top: 1px solid var(--line);
+            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+        }
+
+        .identity-toggle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .identity-toggle label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+
+        .identity-toggle label:hover {
+            border-color: var(--blue);
+            background: linear-gradient(135deg, var(--blue-soft), var(--violet-soft));
+            color: var(--blue);
+        }
+
+        .identity-toggle input {
+            width: auto;
+            margin: 0 6px 0 0;
+        }
+
+        .chat-row {
+            display: grid;
+            grid-template-columns: 1fr auto 42px;
+            gap: 8px;
+        }
+
+        .chat-form input[type="text"] {
+            min-width: 0;
+            height: 38px;
+            padding: 0 10px;
+        }
+
+        .send {
+            width: 42px;
+            height: 38px;
+            border: 0;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #111827, #2563eb);
+            color: #fff;
+            cursor: pointer;
+            font-size: 18px;
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+
+        .send:hover {
+            background: var(--blue);
+            transform: translateY(-1px);
+        }
+
+        .file-button {
+            position: relative;
+            display: grid;
+            place-items: center;
+            width: 42px;
+            height: 38px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            box-shadow: 0 6px 14px rgba(25, 31, 44, 0.04);
+            transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+        }
+
+        .file-button:hover,
+        .file-button:focus-within {
+            border-color: var(--blue);
+            background: linear-gradient(135deg, #eef4ff, #ecfeff);
+            transform: translateY(-1px);
+        }
+
+        .folder-icon {
+            position: relative;
+            display: block;
+            width: 22px;
+            height: 16px;
+            border: 2px solid currentColor;
+            border-radius: 4px;
+            background: linear-gradient(180deg, #ffffff 0%, #eef4ff 100%);
+        }
+
+        .folder-icon::before {
+            content: "";
+            position: absolute;
+            left: 2px;
+            top: -7px;
+            width: 10px;
+            height: 7px;
+            border: 2px solid currentColor;
+            border-bottom: 0;
+            border-radius: 4px 4px 0 0;
+            background: #fff;
+        }
+
+        .file-button input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @media (max-width: 1120px) {
+            .layout {
+                grid-template-columns: 1fr;
+                height: auto;
+                min-height: 0;
+                overflow: visible;
+            }
+
+            .left-rail { display: none; }
+            .chat {
+                position: static;
+                max-height: none;
+                overflow: visible;
+                padding-right: 0;
+            }
+            .feed-column { overflow: visible; padding-right: 0; }
+            .chat-box { grid-template-rows: auto 260px auto; }
+            .board-search-panel { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 760px) {
+            .topbar {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 12px;
+            }
+
+            .nav-actions { overflow-x: auto; }
+            .layout { grid-template-columns: 1fr; padding: 12px; }
+            .topic-header { padding: 12px 12px 0; }
+            .topic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .feed { grid-template-columns: 1fr; }
+            .post-media { min-height: 220px; padding: 22px; }
+            .summary-grid { grid-template-columns: 1fr; }
+            .composer-actions { align-items: stretch; flex-direction: column; }
+            .button.primary { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="{% url 'home' %}" aria-label="Orbix home">
+            <img class="brand-logo" src="{% static 'posts/orbix-logo.png' %}?v=20260502b" alt="" aria-hidden="true">
+            <span class="brand-wordmark">Orbix</span>
+        </a>
+        <input class="search" type="search" placeholder="게시판, 개인 피드, 채팅 검색" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <nav class="nav-actions" aria-label="계정 메뉴">
+            {% if user.is_authenticated %}
+                <a class="button" href="{% url 'profile_feed' user.username %}">내 피드</a>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button class="button" type="submit">로그아웃</button>
+                </form>
+            {% else %}
+                <a class="button" href="{% url 'login' %}">로그인</a>
+                <a class="button primary" href="{% url 'signup' %}">가입</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <section class="topic-header" aria-label="토픽 맵">
+        <div class="topic-shell">
+            <div class="topic-topline">
+                <div class="topic-grid">
+                    {% for topic in topic_cards %}
+                        <a class="topic-card {% if topic.active %}active{% endif %}" href="?category={{ topic.category.id }}" data-board-name="{{ topic.category.path_label }}">
+                            <span class="topic-icon" aria-hidden="true">{{ topic.icon }}</span>
+                            <span>{{ topic.category.name }}</span>
+                        </a>
+                    {% endfor %}
+                    {% if topic_category %}
+                        {% if topic_back_category %}
+                            <a class="topic-card back" href="?category={{ topic_back_category.id }}">
+                                <span class="topic-icon" aria-hidden="true">←</span>
+                                <span>{{ topic_back_category.name }}</span>
+                            </a>
+                        {% else %}
+                            <a class="topic-card back" href="{% url 'home' %}">
+                                <span class="topic-icon" aria-hidden="true">←</span>
+                                <span>돌아가기</span>
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            {% if topic_category %}
+                <div class="subtopic-strip">
+                    {% for item in subtopic_items %}
+                        {% if item.type == "category" %}
+                            <a class="subtopic-pill" href="?category={{ item.category.id }}" data-board-name="{{ item.category.path_label }}">
+                                <span class="subtopic-icon" aria-hidden="true">{{ item.icon }}</span>
+                                <span>{{ item.name }}</span>
+                            </a>
+                        {% elif item.type == "preset" %}
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="create_board">
+                                <input type="hidden" name="category_id" value="{{ item.category.id }}">
+                                <input type="hidden" name="board_name" value="{{ item.name }}">
+                                <button class="subtopic-pill {% if item.selected %}selected-board{% endif %}" type="submit">
+                                    <span class="subtopic-icon" aria-hidden="true">{{ item.icon }}</span>
+                                    <span>{{ item.name }}</span>
+                                </button>
+                            </form>
+                        {% elif item.type == "board" %}
+                            <a class="subtopic-pill {% if item.selected %}selected-board{% endif %}" href="?board={{ item.board.slug }}" data-board-name="{{ item.board.path_label }}">
+                                <span class="subtopic-icon" aria-hidden="true">{{ item.icon }}</span>
+                                <span>{{ item.name }}</span>
+                            </a>
+                        {% endif %}
+                    {% empty %}
+                        <span class="subtopic-pill active">
+                            <span class="subtopic-icon" aria-hidden="true">＋</span>
+                            <span>새 궤도 생성</span>
+                        </span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div class="board-search-panel">
+                <div>
+                    <h2 class="section-title">나의 궤도를 만들어보세요</h2>
+                    <p class="orbit-copy">클릭 한 번으로 만들어지는 나의 세계</p>
+                </div>
+                <form class="board-search-form" id="board-search-form" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="create_board">
+                    <input type="hidden" name="category_id" value="{{ board_search_category.id }}">
+                    <input class="board-search" id="board-search" name="board_name" type="search" placeholder="만들고 싶은 궤도 이름을 입력하세요" autocomplete="off" autocapitalize="off" spellcheck="false">
+                    <button class="board-search-button" type="submit" title="검색">⌕</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <main class="layout">
+        <aside class="left-rail" aria-label="인기 목록">
+            <div class="summary-grid" aria-label="인기 요약">
+                <section class="summary-panel">
+                    <h2 class="section-title">Popular Posts Top 10</h2>
+                    <div class="compact-list">
+                        {% for post in popular_posts %}
+                            <a class="compact-row" href="{% url 'post_detail' post.id %}">
+                                {{ post.title }}
+                                <span>
+                                    {% if post.board %}
+                                        {{ post.board.category.name }} > {{ post.board.name }}
+                                    {% else %}
+                                        개인 피드
+                                    {% endif %}
+                                    · 좋아요 {{ post.like_count }} · 댓글 {{ post.comment_count }}
+                                </span>
+                            </a>
+                        {% empty %}
+                            <div class="compact-row">
+                                아직 표시할 게시글이 없습니다.
+                                <span>게시글 반응이 생기면 여기에 나타납니다.</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                <section class="summary-panel">
+                    <h2 class="section-title">Popular Boards Top 10</h2>
+                    <div class="compact-list">
+                        {% for board in popular_boards %}
+                            <a class="compact-row" href="?board={{ board.slug }}" data-board-name="{{ board.path_label }}">
+                                {{ board.name }}
+                                <span>{{ board.category.path_label }} · 글 {{ board.post_count }} · 채팅 {{ board.chat_count }}</span>
+                            </a>
+                        {% empty %}
+                            <div class="compact-row">
+                                아직 생성된 게시판이 없습니다.
+                                <span>대분류를 열어 첫 공간을 만들어보세요.</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+        </aside>
+        <section class="feed-column" aria-label="피드">
+            <div class="feed-heading">
+                <div>
+                    {% if selected_board %}
+                        <h1>{{ selected_board.name }}</h1>
+                        <p>{{ selected_board.category.path_label }} 게시판</p>
+                    {% elif selected_category %}
+                        <h1>{{ selected_category.name }}</h1>
+                        <p>{{ selected_category.path_label }} 전체 게시글</p>
+                    {% else %}
+                        <h1>전체 피드</h1>
+                        <p>주제 게시판 글과 사람들의 개인 피드가 함께 흐릅니다.</p>
+                    {% endif %}
+                </div>
+                {% if selected_board or selected_category %}
+                    <a class="button" href="{% url 'home' %}">전체 보기</a>
+                {% endif %}
+            </div>
+
+            <form class="composer" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% if selected_board %}
+                    <input type="hidden" name="board_id" value="{{ selected_board.id }}">
+                {% endif %}
+                <div class="composer-head">
+                    <strong>{% if selected_board %}{{ selected_board.name }}에 글쓰기{% else %}새 게시글{% endif %}</strong>
+                    <span class="hint">{% if selected_board %}게시판 피드{% elif selected_category %}분류 피드{% else %}전체 피드{% endif %}</span>
+                </div>
+                <div class="composer-body">
+                    <input name="title" maxlength="200" placeholder="제목" required>
+                    <textarea name="content" placeholder="무슨 일이 일어나고 있나요?" required></textarea>
+                    <div class="media-upload">
+                        <label class="media-pill">
+                            + 사진/영상
+                            <input type="file" name="media" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime" multiple>
+                        </label>
+                        <span class="hint">사진은 최대 20장, 3MB 초과 사진은 자동 압축됩니다.</span>
+                    </div>
+                    <div class="composer-actions">
+                        <span class="hint">
+                            {% if user.is_authenticated %}
+                                글은 게시판과 내 개인 피드에 동시에 남습니다.
+                            {% else %}
+                                로그인하지 않으면 개인 피드에는 연결되지 않습니다.
+                            {% endif %}
+                        </span>
+                        <button class="button primary" type="submit">게시</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="feed">
+                {% for post in posts %}
+                    <article class="post">
+                        <div class="post-head">
+                            <div class="avatar">
+                                {% if post.author and post.author.profile %}
+                                    {{ post.author.profile.display_name|first|upper }}
+                                {% else %}
+                                    {{ post.title|first|upper }}
+                                {% endif %}
+                            </div>
+                            <div class="meta">
+                                <strong><a href="{% url 'post_detail' post.id %}">{{ post.title }}</a></strong>
+                                <span>
+                                    {% if post.author %}
+                                        <a href="{% url 'profile_feed' post.author.username %}">@{{ post.author.profile.display_name|default:post.author.username }}</a>
+                                    {% else %}
+                                        익명 작성자
+                                    {% endif %}
+                                    ·
+                                    {% if post.board %}
+                                        {{ post.board.path_label }}
+                                    {% else %}
+                                        미분류
+                                    {% endif %}
+                                    · {{ post.created_at|date:"Y.m.d H:i" }}
+                                </span>
+                            </div>
+                        </div>
+                        {% if post.media.all %}
+                            <div class="post-media has-files">
+                                {% for item in post.media.all %}
+                                    <div class="{% if post.media.all|length == 1 %}single-media{% endif %}">
+                                        {% if item.media_type == 'image' %}
+                                            <img src="{{ item.file.url }}" alt="{{ post.title }}">
+                                        {% else %}
+                                            <video src="{{ item.file.url }}" controls></video>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="post-media">
+                                <h2>{{ post.title }}</h2>
+                            </div>
+                        {% endif %}
+                        <div class="post-body">
+                            <p>{{ post.content }}</p>
+                        </div>
+                        <div class="post-tools" aria-label="게시글 반응">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="toggle_like">
+                                <input type="hidden" name="post_id" value="{{ post.id }}">
+                                <button class="icon-button {% if post.id in liked_post_ids %}active{% endif %}" type="submit" title="좋아요">
+                                    ♡ {{ post.like_count }}
+                                </button>
+                            </form>
+                            <a class="icon-button" href="{% url 'post_detail' post.id %}#comments" title="댓글">⌕ {{ post.comment_count }}</a>
+                            <button class="icon-button feed-share-button" type="button" title="공유" data-share-path="{% url 'post_detail' post.id %}">↗</button>
+                        </div>
+                    </article>
+                {% endfor %}
+
+                {% for post in sample_posts %}
+                    <article class="post">
+                        <div class="post-head">
+                            <div class="avatar">{{ post.title|first }}</div>
+                            <div class="meta">
+                                <strong>{{ post.title }}</strong>
+                                <span>샘플 피드 · 방금 전</span>
+                            </div>
+                        </div>
+                        <div class="post-media">
+                            <h2>{{ post.title }}</h2>
+                        </div>
+                        <div class="post-body">
+                            <p>{{ post.content }}</p>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        <aside class="chat" aria-label="실시간 채팅">
+            <div class="chat-box">
+                <div class="chat-head">
+                    <div class="chat-title-row">
+                        <span>{{ chat_title }}</span>
+                        <span class="live"><span class="dot"></span>온라인</span>
+                    </div>
+                    <div class="chat-tabs">
+                        <a class="chat-tab {% if chat_scope == 'global' %}active{% endif %}" href="{% url 'home' %}">전체</a>
+                        {% if selected_category %}
+                            <a class="chat-tab {% if chat_scope == 'category' %}active{% endif %}" href="?category={{ selected_category.id }}&chat=category">{{ selected_category.name }}</a>
+                        {% elif selected_board %}
+                            <a class="chat-tab {% if chat_scope == 'board' %}active{% endif %}" href="?board={{ selected_board.slug }}">{{ selected_board.name }}</a>
+                        {% endif %}
+                        {% if user.is_authenticated and private_user %}
+                            <a class="chat-tab active" href="?chat=private&private_user={{ private_user.id }}">개인</a>
+                        {% elif user.is_authenticated %}
+                            <span class="chat-tab">개인</span>
+                        {% endif %}
+                    </div>
+                    {% if user.is_authenticated %}
+                        <form class="private-chat-picker" method="get">
+                            <input type="hidden" name="chat" value="private">
+                            <select name="private_user" aria-label="개인채팅 상대">
+                                {% for person in profiles %}
+                                    {% if person.user != user %}
+                                        <option value="{{ person.user.id }}" {% if private_user.id == person.user.id %}selected{% endif %}>{{ person.display_name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            <button class="button" type="submit">열기</button>
+                        </form>
+                    {% endif %}
+                </div>
+                <div class="messages" id="messages">
+                    {% for chat in chat_messages %}
+                        <div class="message {{ chat.identity_mode }}">
+                            <span class="sender">
+                                {% if chat.identity_mode == 'real' and chat.user %}
+                                    <a href="{% url 'profile_feed' chat.user.username %}">{{ chat.sender_name }}</a>
+                                {% else %}
+                                    익명
+                                {% endif %}
+                                {{ chat.created_at|date:"H:i" }}
+                            </span>
+                            {% if chat.message %}
+                                {{ chat.message }}
+                            {% endif %}
+                            {% if chat.image %}
+                                <img src="{{ chat.image.url }}" alt="채팅 이미지">
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <div class="message">아직 채팅이 없습니다. 익명으로 가볍게 말하거나, 개인 피드 이름으로 참여할 수 있어요.</div>
+                    {% endfor %}
+                </div>
+                <form class="chat-form" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="send_chat">
+                    <input type="hidden" name="chat_scope" value="{{ chat_scope }}">
+                    {% if private_user %}
+                        <input type="hidden" name="recipient_id" value="{{ private_user.id }}">
+                    {% endif %}
+                    <div class="identity-toggle">
+                        <label>
+                            <input type="radio" name="identity_mode" value="anonymous" checked>
+                            익명
+                        </label>
+                        <label>
+                            <input type="radio" name="identity_mode" value="real" {% if not user.is_authenticated %}disabled{% endif %}>
+                            실명{% if user.is_authenticated %} · {{ profile.display_name }}{% endif %}
+                        </label>
+                    </div>
+                    <div class="chat-row">
+                        <input data-chat-message type="text" name="message" autocomplete="off" placeholder="메시지 입력">
+                        <label class="file-button" title="사진 첨부" aria-label="사진 첨부">
+                            <span class="folder-icon" aria-hidden="true"></span>
+                            <input type="file" name="image" accept="image/jpeg,image/png,image/gif,image/webp">
+                        </label>
+                        <button class="send" type="submit" title="보내기">›</button>
+                    </div>
+                    {% if not user.is_authenticated %}
+                        <span class="hint">실명 채팅은 로그인 후 사용할 수 있습니다.</span>
+                    {% endif %}
+                    <span class="hint">사진은 JPG, PNG, GIF, WebP만 가능하고 3MB까지 업로드됩니다.</span>
+                </form>
+            </div>
+        </aside>
+    </main>
+    <script>
+        const boardSearch = document.querySelector("#board-search");
+        const boardSearchForm = document.querySelector("#board-search-form");
+        const boardRows = document.querySelectorAll("[data-board-name]");
+        const topicHeader = document.querySelector(".topic-header");
+
+        function updateSideStickyTop() {
+            if (!topicHeader) return;
+            const headerBottom = topicHeader.getBoundingClientRect().bottom;
+            const stickyTop = Math.max(84, Math.ceil(headerBottom + 12));
+            document.documentElement.style.setProperty("--side-sticky-top", `${stickyTop}px`);
+        }
+
+        updateSideStickyTop();
+        window.addEventListener("resize", updateSideStickyTop);
+        window.addEventListener("scroll", updateSideStickyTop, { passive: true });
+
+        function filterBoards() {
+            if (!boardSearch) return;
+            const query = boardSearch.value.trim().toLowerCase();
+            boardRows.forEach((row) => {
+                const text = row.dataset.boardName.toLowerCase();
+                row.classList.toggle("hidden", query && !text.includes(query));
+            });
+        }
+
+        if (boardSearch) {
+            boardSearch.addEventListener("input", filterBoards);
+        }
+
+        if (boardSearchForm) {
+            boardSearchForm.addEventListener("submit", (event) => {
+                event.preventDefault();
+                const orbitName = boardSearch.value.trim();
+                if (!orbitName) return;
+                const confirmed = window.confirm(`"${orbitName}" 궤도를 생성합니다.\n동일한 궤도가 있다면 기존 궤도로 입장됩니다.`);
+                if (!confirmed) return;
+                filterBoards();
+                const firstVisibleBoard = Array.from(boardRows).find((row) => !row.classList.contains("hidden") && row.offsetParent !== null);
+                if (firstVisibleBoard) {
+                    window.location.href = firstVisibleBoard.href;
+                    return;
+                }
+                boardSearchForm.submit();
+            });
+        }
+
+        document.querySelectorAll(".post-tools form").forEach((form) => {
+            form.addEventListener("submit", () => {
+                sessionStorage.setItem("orbixFeedScrollY", String(window.scrollY));
+            });
+        });
+
+        if (new URLSearchParams(window.location.search).get("restore_scroll") === "1") {
+            const savedScrollY = sessionStorage.getItem("orbixFeedScrollY");
+            if (savedScrollY !== null) {
+                window.scrollTo({ top: Number(savedScrollY), left: 0, behavior: "instant" });
+                sessionStorage.removeItem("orbixFeedScrollY");
+            }
+        }
+
+        document.querySelectorAll(".feed-share-button").forEach((button) => {
+            button.addEventListener("click", async () => {
+                const url = new URL(button.dataset.sharePath, window.location.origin).href;
+                try {
+                    await navigator.clipboard.writeText(url);
+                    const originalText = button.textContent;
+                    button.textContent = "✓";
+                    window.setTimeout(() => {
+                        button.textContent = originalText;
+                    }, 1200);
+                } catch (error) {
+                    window.prompt("게시글 링크", url);
+                }
+            });
+        });
+
+        const chatForm = document.querySelector(".chat-form");
+        if (chatForm) {
+            chatForm.addEventListener("submit", () => {
+                sessionStorage.setItem("orbixChatScrollY", String(window.scrollY));
+            });
+        }
+
+        if (new URLSearchParams(window.location.search).get("focus_chat") === "1") {
+            const chatMessage = document.querySelector("[data-chat-message]");
+            const savedScrollY = sessionStorage.getItem("orbixChatScrollY");
+            if (savedScrollY !== null) {
+                window.scrollTo({ top: Number(savedScrollY), left: 0, behavior: "instant" });
+                sessionStorage.removeItem("orbixChatScrollY");
+            }
+            if (chatMessage) {
+                chatMessage.focus({ preventScroll: true });
+            }
+        }
+
+        const messages = document.querySelector("#messages");
+        if (messages) {
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        if (window.location.hash === "#chat-message") {
+            history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+        }
+    </script>
+</body>
+</html>
+

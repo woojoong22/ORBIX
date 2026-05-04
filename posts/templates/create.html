@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>글쓰기 · Orbix</title>
+    <style>
+        body {
+            margin: 0;
+            background: #eef1f5;
+            color: #16181d;
+            font-family: Arial, "Noto Sans KR", sans-serif;
+        }
+
+        main {
+            width: min(720px, calc(100% - 24px));
+            margin: 32px auto;
+            padding: 20px;
+            border: 1px solid #d9dee8;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        h1 {
+            margin: 0 0 18px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d9dee8;
+            border-radius: 8px;
+            background: #f4f6f9;
+            font: inherit;
+            box-sizing: border-box;
+        }
+
+        input {
+            height: 44px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        textarea {
+            min-height: 180px;
+            resize: vertical;
+        }
+
+        .media-upload {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-top: 10px;
+            color: #6f7785;
+            font-size: 13px;
+        }
+
+        .media-upload input {
+            width: auto;
+            height: auto;
+            margin: 0;
+            background: #fff;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+
+        button,
+        a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 0 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        button {
+            border: 0;
+            background: #e5484d;
+            color: #fff;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        a {
+            border: 1px solid #d9dee8;
+            color: #16181d;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>글쓰기</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="text" name="title" maxlength="200" placeholder="제목" required>
+            <textarea name="content" placeholder="내용" required></textarea>
+            <div class="media-upload">
+                <input type="file" name="media" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime" multiple>
+                <span>사진은 최대 20장, 3MB 초과 사진은 자동 압축됩니다.</span>
+            </div>
+            <div class="actions">
+                <a href="{% url 'home' %}">취소</a>
+                <button type="submit">등록</button>
+            </div>
+        </form>
+    </main>
+</body>
+</html>
+
