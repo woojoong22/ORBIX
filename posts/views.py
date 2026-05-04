@@ -10,8 +10,10 @@ from django.core.files.base import ContentFile
 from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Count, Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
+from django.views.decorators.http import require_GET, require_POST
 from PIL import Image
 
 from .models import Category, ChatMessage, Post, PostComment, PostLike, PostMedia, Subscription, TopicBoard, UserProfile
@@ -643,6 +645,66 @@ def ensure_profile(user):
     return profile
 
 
+def get_follow_payload(request_user, target_user, status, changed):
+    return {
+        'status': status,
+        'changed': changed,
+        'is_following': (
+            request_user.is_authenticated
+            and request_user != target_user
+            and Subscription.objects.filter(
+                subscriber=request_user,
+                target=target_user,
+            ).exists()
+        ),
+        'follower_count': target_user.subscribers.count(),
+        'following_count': target_user.subscriptions.count(),
+    }
+
+
+@login_required
+@require_POST
+def follow_account(request, username):
+    target_user = get_object_or_404(User, username=username)
+    if request.user == target_user:
+        return JsonResponse(
+            get_follow_payload(request.user, target_user, 'self_follow_blocked', False),
+            status=400,
+        )
+
+    _, created = Subscription.objects.get_or_create(
+        subscriber=request.user,
+        target=target_user,
+    )
+    status = 'followed' if created else 'already_following'
+    return JsonResponse(get_follow_payload(request.user, target_user, status, created))
+
+
+@login_required
+@require_POST
+def unfollow_account(request, username):
+    target_user = get_object_or_404(User, username=username)
+    if request.user == target_user:
+        return JsonResponse(
+            get_follow_payload(request.user, target_user, 'self_unfollow_blocked', False),
+            status=400,
+        )
+
+    deleted_count, _ = Subscription.objects.filter(
+        subscriber=request.user,
+        target=target_user,
+    ).delete()
+    changed = deleted_count > 0
+    status = 'unfollowed' if changed else 'not_following'
+    return JsonResponse(get_follow_payload(request.user, target_user, status, changed))
+
+
+@require_GET
+def follow_state(request, username):
+    target_user = get_object_or_404(User, username=username)
+    return JsonResponse(get_follow_payload(request.user, target_user, 'ok', False))
+
+
 def make_unique_slug(name):
     base = slugify(name, allow_unicode=True) or 'board'
     slug = base
@@ -1242,6 +1304,8 @@ def home(request):
     selected_category = None if selected_board else get_selected_category(request)
     topic_category = selected_board.category if selected_board else selected_category
     chat_context = get_chat_context(request, selected_board, selected_category)
+    feed_filter = request.GET.get('feed')
+    following_feed = feed_filter == 'following'
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -1333,10 +1397,18 @@ def home(request):
         posts = posts.filter(board=selected_board)
     elif selected_category:
         posts = posts.filter(board__category_id__in=get_descendant_category_ids(selected_category))
+    if following_feed:
+        if not request.user.is_authenticated:
+            return redirect('login')
+        followed_user_ids = Subscription.objects.filter(
+            subscriber=request.user,
+        ).values('target_id')
+        posts = posts.filter(author_id__in=followed_user_ids)
 
     profiles = UserProfile.objects.select_related('user').annotate(
         post_count=Count('user__posts', distinct=True),
         subscriber_count=Count('user__subscribers', distinct=True),
+        following_count=Count('user__subscriptions', distinct=True),
     ).order_by('-subscriber_count', '-post_count', '-created_at')[:8]
     boards = TopicBoard.objects.select_related(
         'category',
@@ -1391,6 +1463,8 @@ def home(request):
         'popular_boards': popular_boards,
         'popular_posts': popular_posts,
         'liked_post_ids': liked_post_ids,
+        'feed_filter': feed_filter,
+        'following_feed': following_feed,
     })
 
 
@@ -1512,6 +1586,7 @@ def profile_feed(request, username):
         'posts': posts,
         'is_subscribed': is_subscribed,
         'subscriber_count': user.subscribers.count(),
+        'following_count': user.subscriptions.count(),
         'subscribers': subscribers,
         'subscriber_sort': subscriber_sort,
         'category_tree': build_category_tree(),

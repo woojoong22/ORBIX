@@ -1662,6 +1662,15 @@
                 </div>
             </form>
 
+            <div class="feed-toolbar">
+                <a class="button {% if not following_feed %}primary{% endif %}" href="{% url 'home' %}">전체 피드</a>
+                {% if user.is_authenticated %}
+                    <a class="button {% if following_feed %}primary{% endif %}" href="?feed=following">구독 피드</a>
+                {% else %}
+                    <a class="button" href="{% url 'login' %}">구독 피드</a>
+                {% endif %}
+            </div>
+
             <div class="feed">
                 {% for post in posts %}
                     <article class="post">
