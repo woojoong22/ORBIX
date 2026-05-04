@@ -1073,6 +1073,17 @@
             background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
         }
 
+        .post-follow-form {
+            margin-left: auto;
+            flex: 0 0 auto;
+        }
+
+        .post-follow-form .button {
+            min-height: 32px;
+            padding: 0 11px;
+            font-size: 12px;
+        }
+
         .meta strong {
             display: block;
             font-size: 15px;
@@ -1699,6 +1710,16 @@
                                     · {{ post.created_at|date:"Y.m.d H:i" }}
                                 </span>
                             </div>
+                            {% if user.is_authenticated and post.author and post.author != user %}
+                                <form class="post-follow-form" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="toggle_subscription">
+                                    <input type="hidden" name="username" value="{{ post.author.username }}">
+                                    <button class="button {% if post.author.id not in followed_user_ids %}primary{% endif %}" type="submit">
+                                        {% if post.author.id in followed_user_ids %}구독 중{% else %}구독{% endif %}
+                                    </button>
+                                </form>
+                            {% endif %}
                         </div>
                         {% if post.media.all %}
                             <div class="post-media has-files">

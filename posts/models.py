@@ -217,6 +217,50 @@ class PostComment(models.Model):
         return f'{self.author_name}: {self.content[:30]}'
 
 
+class Notification(models.Model):
+    VERB_FOLLOW = 'follow'
+    VERB_LIKE = 'like'
+    VERB_COMMENT = 'comment'
+    VERB_CHOICES = [
+        (VERB_FOLLOW, 'follow'),
+        (VERB_LIKE, 'like'),
+        (VERB_COMMENT, 'comment'),
+    ]
+
+    recipient = models.ForeignKey(
+        User,
+        related_name='notifications',
+        on_delete=models.CASCADE,
+    )
+    actor = models.ForeignKey(
+        User,
+        related_name='sent_notifications',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    verb = models.CharField(max_length=20, choices=VERB_CHOICES)
+    post = models.ForeignKey(
+        Post,
+        related_name='notifications',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+    )
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['recipient', 'is_read', '-created_at']),
+            models.Index(fields=['actor', 'verb']),
+        ]
+
+    def __str__(self):
+        return f'{self.actor} {self.verb} -> {self.recipient}'
+
+
 class ChatMessage(models.Model):
     IDENTITY_ANONYMOUS = 'anonymous'
     IDENTITY_REAL = 'real'

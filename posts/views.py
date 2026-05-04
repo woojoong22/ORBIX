@@ -16,7 +16,7 @@ from django.utils.text import slugify
 from django.views.decorators.http import require_GET, require_POST
 from PIL import Image
 
-from .models import Category, ChatMessage, Post, PostComment, PostLike, PostMedia, Subscription, TopicBoard, UserProfile
+from .models import Category, ChatMessage, Notification, Post, PostComment, PostLike, PostMedia, Subscription, TopicBoard, UserProfile
 
 MAX_CHAT_IMAGE_SIZE = 3 * 1024 * 1024
 ALLOWED_CHAT_IMAGE_TYPES = {'image/jpeg', 'image/png', 'image/gif', 'image/webp'}
@@ -645,6 +645,21 @@ def ensure_profile(user):
     return profile
 
 
+def create_notification(recipient, actor, verb, post=None, dedupe=False):
+    if not recipient or not actor or actor == recipient:
+        return None
+    payload = {
+        'recipient': recipient,
+        'actor': actor,
+        'verb': verb,
+        'post': post,
+    }
+    if dedupe:
+        notification, _ = Notification.objects.get_or_create(**payload)
+        return notification
+    return Notification.objects.create(**payload)
+
+
 def get_follow_payload(request_user, target_user, status, changed):
     return {
         'status': status,
@@ -676,6 +691,13 @@ def follow_account(request, username):
         subscriber=request.user,
         target=target_user,
     )
+    if created:
+        create_notification(
+            target_user,
+            request.user,
+            Notification.VERB_FOLLOW,
+            dedupe=True,
+        )
     status = 'followed' if created else 'already_following'
     return JsonResponse(get_follow_payload(request.user, target_user, status, created))
 
@@ -1307,6 +1329,15 @@ def home(request):
     feed_filter = request.GET.get('feed')
     following_feed = feed_filter == 'following'
 
+    def restore_feed_redirect():
+        if selected_board:
+            return redirect(f'/?board={selected_board.slug}&restore_scroll=1')
+        if selected_category:
+            return redirect(f'/?category={selected_category.id}&restore_scroll=1')
+        if following_feed:
+            return redirect('/?feed=following&restore_scroll=1')
+        return redirect('/?restore_scroll=1')
+
     if request.method == 'POST':
         action = request.POST.get('action')
 
@@ -1360,11 +1391,35 @@ def home(request):
                 like.delete()
             else:
                 PostLike.objects.create(post=post, user=request.user)
-            if selected_board:
-                return redirect(f'/?board={selected_board.slug}&restore_scroll=1')
-            if selected_category:
-                return redirect(f'/?category={selected_category.id}&restore_scroll=1')
-            return redirect('/?restore_scroll=1')
+                create_notification(
+                    post.author,
+                    request.user,
+                    Notification.VERB_LIKE,
+                    post=post,
+                    dedupe=True,
+                )
+            return restore_feed_redirect()
+
+        if action == 'toggle_subscription':
+            if not request.user.is_authenticated:
+                return redirect('login')
+            target_user = get_object_or_404(User, username=request.POST.get('username'))
+            if request.user != target_user:
+                subscription = Subscription.objects.filter(
+                    subscriber=request.user,
+                    target=target_user,
+                ).first()
+                if subscription:
+                    subscription.delete()
+                else:
+                    Subscription.objects.create(subscriber=request.user, target=target_user)
+                    create_notification(
+                        target_user,
+                        request.user,
+                        Notification.VERB_FOLLOW,
+                        dedupe=True,
+                    )
+            return restore_feed_redirect()
 
         title = request.POST.get('title', '').strip()
         content = request.POST.get('content', '').strip()
@@ -1435,11 +1490,15 @@ def home(request):
         comment_count=Count('comments', distinct=True),
     ).order_by('-like_count', '-comment_count', '-created_at')[:10]
     liked_post_ids = set()
+    followed_user_ids = set()
     if request.user.is_authenticated:
         liked_post_ids = set(PostLike.objects.filter(
             user=request.user,
             post__in=posts,
         ).values_list('post_id', flat=True))
+        followed_user_ids = set(Subscription.objects.filter(
+            subscriber=request.user,
+        ).values_list('target_id', flat=True))
 
     return render(request, 'home.html', {
         'category_tree': build_category_tree(),
@@ -1463,6 +1522,7 @@ def home(request):
         'popular_boards': popular_boards,
         'popular_posts': popular_posts,
         'liked_post_ids': liked_post_ids,
+        'followed_user_ids': followed_user_ids,
         'feed_filter': feed_filter,
         'following_feed': following_feed,
     })
@@ -1523,6 +1583,12 @@ def profile_feed(request, username):
                     subscription.delete()
                 else:
                     Subscription.objects.create(subscriber=request.user, target=user)
+                    create_notification(
+                        user,
+                        request.user,
+                        Notification.VERB_FOLLOW,
+                        dedupe=True,
+                    )
             return redirect('profile_feed', username=user.username)
 
         if action == 'update_profile' and request.user == user:
@@ -1639,6 +1705,13 @@ def post_detail(request, post_id):
                 like.delete()
             else:
                 PostLike.objects.create(post=post, user=request.user)
+                create_notification(
+                    post.author,
+                    request.user,
+                    Notification.VERB_LIKE,
+                    post=post,
+                    dedupe=True,
+                )
             return redirect('post_detail', post_id=post.id)
 
         if action == 'add_comment':
@@ -1648,6 +1721,12 @@ def post_detail(request, post_id):
                     post=post,
                     user=request.user if request.user.is_authenticated else None,
                     content=content[:500],
+                )
+                create_notification(
+                    post.author,
+                    request.user if request.user.is_authenticated else None,
+                    Notification.VERB_COMMENT,
+                    post=post,
                 )
             return redirect('post_detail', post_id=post.id)
 
