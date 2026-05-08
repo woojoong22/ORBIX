@@ -71,19 +71,8 @@
             text-align: center;
         }
 
-        .logo {
-            width: 118px;
-            height: 118px;
-            border: 1px solid rgba(255, 255, 255, 0.24);
-            border-radius: 26px;
-            object-fit: cover;
-            box-shadow:
-                0 0 0 10px rgba(87, 169, 255, 0.06),
-                0 28px 90px rgba(56, 231, 255, 0.22);
-        }
-
         h1 {
-            margin: 4px 0 0;
+            margin: 0;
             color: transparent;
             background: linear-gradient(100deg, var(--cyan), var(--blue) 42%, var(--rose));
             background-clip: text;
@@ -172,7 +161,6 @@
 
         @media (max-width: 560px) {
             .stage { padding: 18px; }
-            .logo { width: 96px; height: 96px; }
             .orbit-form { grid-template-columns: 1fr; }
             .actions,
             .button { width: 100%; }
@@ -182,7 +170,6 @@
 <body>
     <main class="stage">
         <section class="portal" aria-label="ORBIX 입장">
-            <img class="logo" src="{% static 'posts/orbix-logo.png' %}?v=20260502b" alt="ORBIX">
             <h1>ORBIX</h1>
             <p class="copy">관심사를 입력하면 하나의 궤도가 열립니다. 게시판을 만들고, 같은 궤도를 도는 사람들과 바로 대화하세요.</p>
             <form class="orbit-form" method="post">
