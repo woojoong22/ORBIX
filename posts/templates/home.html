@@ -278,14 +278,13 @@
             width: min(1540px, 100%);
             margin: 0 auto;
             padding: 10px 24px 0;
-            background:
-                linear-gradient(180deg, rgba(251, 252, 255, 0.98) 0%, rgba(239, 244, 250, 0.96) 82%, rgba(239, 244, 250, 0) 100%);
+            background: transparent;
             backdrop-filter: blur(14px);
         }
 
         .topic-shell {
             width: min(var(--content-grid-max), 100%);
-            padding: 10px 0 12px;
+            padding: 10px;
             border: 0;
             border-radius: 0;
             background: transparent;
@@ -296,151 +295,10 @@
             display: block;
         }
 
-        .orbit-control-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 10px 8px;
-        }
-
-        .orbit-title {
-            width: min(620px, 100%);
-            min-width: 0;
-            text-align: center;
-        }
-
-        .orbit-title strong,
-        .orbit-title span {
-            display: block;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .orbit-title strong {
-            font-size: 13px;
-            font-weight: 900;
-            color: var(--ink);
-        }
-
-        .orbit-title span {
-            margin-top: 2px;
-            color: var(--muted);
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .orbit-button {
-            display: grid;
-            place-items: center;
-            width: 44px;
-            height: 44px;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.9);
-            color: var(--ink);
-            font-size: 28px;
-            font-weight: 900;
-            cursor: pointer;
-            box-shadow: 0 10px 24px rgba(25, 31, 44, 0.1);
-        }
-
-        .orbit-button:hover {
-            border-color: rgba(37, 99, 235, 0.58);
-            color: var(--blue);
-        }
-
-        .orbit-viewport {
-            position: relative;
-            min-height: 182px;
-            overflow: hidden;
-            touch-action: pan-y;
-            cursor: grab;
-            background:
-                linear-gradient(180deg, rgba(251, 252, 255, 0.98), rgba(239, 244, 250, 0.96));
-            border-radius: 8px;
-        }
-
-        .orbit-viewport .orbit-button {
-            position: absolute;
-            top: 54%;
-            z-index: 130;
-            transform: translateY(-50%);
-        }
-
-        .orbit-viewport .orbit-button:hover {
-            transform: translateY(-50%) scale(1.04);
-        }
-
-        .orbit-prev {
-            left: max(10px, calc(50% - min(430px, 42vw) - 34px));
-        }
-
-        .orbit-next {
-            right: max(10px, calc(50% - min(430px, 42vw) - 34px));
-        }
-
-        .orbit-viewport.dragging {
-            cursor: grabbing;
-        }
-
-        .orbit-ring {
-            position: absolute;
-            left: 50%;
-            top: 54%;
-            width: min(860px, calc(100% - 44px));
-            height: 112px;
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            border-top-color: rgba(20, 184, 255, 0.28);
-            border-bottom-color: rgba(217, 70, 239, 0.2);
-            border-radius: 50%;
-            transform: translate(-50%, -50%) rotate(-4deg);
-            pointer-events: none;
-        }
-
-        .orbit-ring::before,
-        .orbit-ring::after {
-            content: "";
-            position: absolute;
-            inset: 14px 38px;
-            border: 1px solid rgba(37, 99, 235, 0.13);
-            border-radius: 50%;
-        }
-
-        .orbit-ring::after {
-            inset: 30px 92px;
-            border-color: rgba(8, 145, 178, 0.12);
-        }
-
-        .orbit-core {
-            position: absolute;
-            left: 50%;
-            top: 54%;
-            display: grid;
-            place-items: center;
-            width: 112px;
-            height: 112px;
-            padding: 12px;
-            border: 1px solid rgba(216, 224, 236, 0.9);
-            border-radius: 50%;
-            background:
-                radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.98), rgba(238, 244, 255, 0.9) 48%, rgba(236, 254, 255, 0.78) 100%);
-            color: var(--ink);
-            font-size: 13px;
-            font-weight: 900;
-            text-align: center;
-            box-shadow: 0 18px 36px rgba(37, 99, 235, 0.12);
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-        }
-
-        .orbit-core span {
-            overflow-wrap: anywhere;
-        }
-
         .topic-grid {
-            position: relative;
-            min-height: 182px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(98px, 1fr));
+            gap: 8px;
         }
 
         .topic-card {
@@ -458,21 +316,7 @@
             font-weight: 800;
             text-align: center;
             box-shadow: 0 7px 18px rgba(25, 31, 44, 0.05);
-            transition: transform 0.22s ease, opacity 0.22s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease;
-        }
-
-        .orbit-viewport .topic-card {
-            position: absolute;
-            left: 50%;
-            top: 54%;
-            width: clamp(92px, 12vw, 132px);
-            min-height: 62px;
-            opacity: var(--orbit-opacity, 1);
-            transform:
-                translate(-50%, -50%)
-                translate(var(--orbit-x, 0), var(--orbit-y, 0))
-                scale(var(--orbit-scale, 1));
-            z-index: var(--orbit-z, 1);
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease;
         }
 
         .topic-card:hover,
@@ -480,15 +324,8 @@
             border-color: rgba(37, 99, 235, 0.62);
             background: linear-gradient(180deg, #eff6ff 0%, #eef2ff 100%);
             color: var(--blue);
+            transform: translateY(-2px);
             box-shadow: 0 12px 28px rgba(37, 99, 235, 0.14);
-        }
-
-        .orbit-viewport .topic-card:hover,
-        .orbit-viewport .topic-card.active {
-            transform:
-                translate(-50%, -50%)
-                translate(var(--orbit-x, 0), var(--orbit-y, 0))
-                scale(calc(var(--orbit-scale, 1) + 0.05));
         }
 
         .topic-card.back {
@@ -600,38 +437,6 @@
 
         .topic-board-strip:empty {
             display: none;
-        }
-
-        @media (max-width: 820px) {
-            .orbit-viewport,
-            .topic-grid {
-                min-height: 154px;
-            }
-
-            .orbit-core {
-                width: 84px;
-                height: 84px;
-                font-size: 12px;
-            }
-
-            .orbit-ring {
-                width: calc(100% - 28px);
-                height: 88px;
-            }
-
-            .orbit-viewport .topic-card {
-                width: 94px;
-                min-height: 56px;
-                font-size: 12px;
-            }
-
-            .orbit-prev {
-                left: 8px;
-            }
-
-            .orbit-next {
-                right: 8px;
-            }
         }
 
         .summary-grid {
@@ -1702,40 +1507,26 @@
     <section class="topic-header" aria-label="토픽 맵">
         <div class="topic-shell">
             <div class="topic-topline">
-                <div class="orbit-control-row">
-                    <div class="orbit-title">
-                        <strong>{% if topic_category %}{{ topic_category.name }} 궤도{% else %}ORBIX 토픽 궤도{% endif %}</strong>
-                        <span>드래그하거나 버튼으로 회전해서 게시판 세계를 탐색하세요</span>
-                    </div>
-                </div>
-                <div class="orbit-viewport" data-orbit>
-                    <button class="orbit-button orbit-prev" type="button" data-orbit-prev aria-label="이전 궤도">‹</button>
-                    <button class="orbit-button orbit-next" type="button" data-orbit-next aria-label="다음 궤도">›</button>
-                    <div class="orbit-ring" aria-hidden="true"></div>
-                    <div class="orbit-core" aria-hidden="true">
-                        <span>{% if topic_category %}{{ topic_category.name }}{% else %}ORBIX{% endif %}</span>
-                    </div>
-                    <div class="topic-grid">
-                        {% for topic in topic_cards %}
-                            <a class="topic-card {% if topic.active %}active{% endif %}" href="?category={{ topic.category.id }}" data-board-name="{{ topic.category.path_label }}">
-                                <span class="topic-icon" aria-hidden="true">{{ topic.icon }}</span>
-                                <span>{{ topic.category.name }}</span>
+                <div class="topic-grid">
+                    {% for topic in topic_cards %}
+                        <a class="topic-card {% if topic.active %}active{% endif %}" href="?category={{ topic.category.id }}" data-board-name="{{ topic.category.path_label }}">
+                            <span class="topic-icon" aria-hidden="true">{{ topic.icon }}</span>
+                            <span>{{ topic.category.name }}</span>
+                        </a>
+                    {% endfor %}
+                    {% if topic_category %}
+                        {% if topic_back_category %}
+                            <a class="topic-card back" href="?category={{ topic_back_category.id }}">
+                                <span class="topic-icon" aria-hidden="true">←</span>
+                                <span>{{ topic_back_category.name }}</span>
                             </a>
-                        {% endfor %}
-                        {% if topic_category %}
-                            {% if topic_back_category %}
-                                <a class="topic-card back" href="?category={{ topic_back_category.id }}">
-                                    <span class="topic-icon" aria-hidden="true">←</span>
-                                    <span>{{ topic_back_category.name }}</span>
-                                </a>
-                            {% else %}
-                                <a class="topic-card back" href="{% url 'home' %}">
-                                    <span class="topic-icon" aria-hidden="true">←</span>
-                                    <span>돌아가기</span>
-                                </a>
-                            {% endif %}
+                        {% else %}
+                            <a class="topic-card back" href="{% url 'home' %}">
+                                <span class="topic-icon" aria-hidden="true">←</span>
+                                <span>돌아가기</span>
+                            </a>
                         {% endif %}
-                    </div>
+                    {% endif %}
                 </div>
             </div>
             {% if topic_category %}
@@ -2079,40 +1870,6 @@
         const boardSearchForm = document.querySelector("#board-search-form");
         const boardRows = document.querySelectorAll("[data-board-name]");
         const topicHeader = document.querySelector(".topic-header");
-        const orbit = document.querySelector("[data-orbit]");
-        const orbitCards = orbit ? Array.from(orbit.querySelectorAll(".topic-card")) : [];
-        const orbitPrev = document.querySelector("[data-orbit-prev]");
-        const orbitNext = document.querySelector("[data-orbit-next]");
-        let orbitRotation = 0;
-        let orbitDragStart = null;
-
-        function layoutOrbit() {
-            if (!orbit || !orbitCards.length) return;
-            const width = orbit.clientWidth;
-            const height = orbit.clientHeight;
-            const radiusX = Math.max(118, Math.min(width * 0.42, 430));
-            const radiusY = Math.max(34, Math.min(height * 0.25, 58));
-            const step = (Math.PI * 2) / orbitCards.length;
-            orbitCards.forEach((card, index) => {
-                const angle = orbitRotation + index * step - Math.PI / 2;
-                const x = Math.cos(angle) * radiusX;
-                const y = Math.sin(angle) * radiusY;
-                const depth = (Math.sin(angle) + 1) / 2;
-                const scale = 0.78 + depth * 0.36;
-                const opacity = 0.42 + depth * 0.58;
-                card.style.setProperty("--orbit-x", `${x}px`);
-                card.style.setProperty("--orbit-y", `${y}px`);
-                card.style.setProperty("--orbit-scale", scale.toFixed(3));
-                card.style.setProperty("--orbit-opacity", opacity.toFixed(3));
-                card.style.setProperty("--orbit-z", String(Math.round(depth * 100)));
-            });
-        }
-
-        function rotateOrbit(direction) {
-            if (!orbitCards.length) return;
-            orbitRotation += direction * ((Math.PI * 2) / orbitCards.length);
-            layoutOrbit();
-        }
 
         function updateSideStickyTop() {
             if (!topicHeader) return;
@@ -2122,53 +1879,8 @@
         }
 
         updateSideStickyTop();
-        layoutOrbit();
-        window.addEventListener("resize", () => {
-            updateSideStickyTop();
-            layoutOrbit();
-        });
+        window.addEventListener("resize", updateSideStickyTop);
         window.addEventListener("scroll", updateSideStickyTop, { passive: true });
-
-        if (orbitPrev) {
-            orbitPrev.addEventListener("click", () => rotateOrbit(1));
-        }
-
-        if (orbitNext) {
-            orbitNext.addEventListener("click", () => rotateOrbit(-1));
-        }
-
-        if (orbit) {
-            orbit.setAttribute("tabindex", "0");
-            orbit.addEventListener("keydown", (event) => {
-                if (event.key === "ArrowLeft") {
-                    event.preventDefault();
-                    rotateOrbit(1);
-                }
-                if (event.key === "ArrowRight") {
-                    event.preventDefault();
-                    rotateOrbit(-1);
-                }
-            });
-            orbit.addEventListener("pointerdown", (event) => {
-                orbitDragStart = { x: event.clientX, rotation: orbitRotation };
-                orbit.classList.add("dragging");
-                orbit.setPointerCapture(event.pointerId);
-            });
-            orbit.addEventListener("pointermove", (event) => {
-                if (!orbitDragStart) return;
-                orbitRotation = orbitDragStart.rotation + (event.clientX - orbitDragStart.x) / 42;
-                layoutOrbit();
-            });
-            orbit.addEventListener("pointerup", (event) => {
-                orbitDragStart = null;
-                orbit.classList.remove("dragging");
-                orbit.releasePointerCapture(event.pointerId);
-            });
-            orbit.addEventListener("pointercancel", () => {
-                orbitDragStart = null;
-                orbit.classList.remove("dragging");
-            });
-        }
 
         function filterBoards() {
             if (!boardSearch) return;
