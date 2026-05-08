@@ -1320,6 +1320,13 @@ def save_post_media(post, files):
 
 
 def landing(request):
+    ensure_default_taxonomy()
+    if request.method == 'POST':
+        board_name = request.POST.get('board_name', '').strip()
+        if board_name:
+            board = get_or_create_routed_board(get_other_category(), board_name)
+            if board:
+                return redirect(f'/home/?board={board.slug}')
     return render(request, 'landing.html')
 
 

@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Notification, Post, Subscription
+from .models import Notification, Post, Subscription, TopicBoard
 
 
 class AuthRedirectTests(TestCase):
@@ -18,6 +18,18 @@ class AuthRedirectTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'home.html')
+
+    def test_landing_board_input_creates_board_and_enters_it(self):
+        response = self.client.post(reverse('landing'), {
+            'board_name': 'AI orbit',
+        })
+
+        board = TopicBoard.objects.get(name='AI orbit')
+        self.assertRedirects(
+            response,
+            f'/home/?board={board.slug}',
+            fetch_redirect_response=False,
+        )
 
     def test_login_redirects_to_home_instead_of_missing_profile_url(self):
         User.objects.create_user(username='orbit', password='password')
