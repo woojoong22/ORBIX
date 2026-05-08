@@ -6,6 +6,19 @@ from .models import Notification, Post, Subscription
 
 
 class AuthRedirectTests(TestCase):
+    def test_landing_page_is_served_at_root(self):
+        response = self.client.get(reverse('landing'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'landing.html')
+        self.assertContains(response, 'ORBIX')
+
+    def test_feed_home_is_served_at_home_path(self):
+        response = self.client.get(reverse('home'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'home.html')
+
     def test_login_redirects_to_home_instead_of_missing_profile_url(self):
         User.objects.create_user(username='orbit', password='password')
 

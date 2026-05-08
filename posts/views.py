@@ -1319,6 +1319,10 @@ def save_post_media(post, files):
             )
 
 
+def landing(request):
+    return render(request, 'landing.html')
+
+
 def home(request):
     ensure_default_taxonomy()
     profile = ensure_profile(request.user)
@@ -1331,12 +1335,12 @@ def home(request):
 
     def restore_feed_redirect():
         if selected_board:
-            return redirect(f'/?board={selected_board.slug}&restore_scroll=1')
+            return redirect(f'/home/?board={selected_board.slug}&restore_scroll=1')
         if selected_category:
-            return redirect(f'/?category={selected_category.id}&restore_scroll=1')
+            return redirect(f'/home/?category={selected_category.id}&restore_scroll=1')
         if following_feed:
-            return redirect('/?feed=following&restore_scroll=1')
-        return redirect('/?restore_scroll=1')
+            return redirect('/home/?feed=following&restore_scroll=1')
+        return redirect('/home/?restore_scroll=1')
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -1347,7 +1351,7 @@ def home(request):
             if board_name:
                 board = get_or_create_routed_board(category, board_name)
                 if board:
-                    return redirect(f'/?board={board.slug}')
+                    return redirect(f'/home/?board={board.slug}')
             return redirect('home')
 
         if action == 'send_chat':
@@ -1375,12 +1379,12 @@ def home(request):
                     image=image,
                 )
             if chat_scope == 'private' and private_user:
-                return redirect(f'/?chat=private&private_user={private_user.id}&focus_chat=1')
+                return redirect(f'/home/?chat=private&private_user={private_user.id}&focus_chat=1')
             if selected_board:
-                return redirect(f'/?board={selected_board.slug}&focus_chat=1')
+                return redirect(f'/home/?board={selected_board.slug}&focus_chat=1')
             if selected_category:
-                return redirect(f'/?category={selected_category.id}&focus_chat=1')
-            return redirect('/?focus_chat=1')
+                return redirect(f'/home/?category={selected_category.id}&focus_chat=1')
+            return redirect('/home/?focus_chat=1')
 
         if action == 'toggle_like':
             if not request.user.is_authenticated:
@@ -1434,7 +1438,7 @@ def home(request):
             )
             save_post_media(post, request.FILES.getlist('media'))
         if board:
-            return redirect(f'/?board={board.slug}')
+            return redirect(f'/home/?board={board.slug}')
         return redirect('home')
 
     posts = Post.objects.select_related(
@@ -1543,7 +1547,7 @@ def profile_feed(request, username):
             if board_name:
                 board = get_or_create_routed_board(category, board_name)
                 if board:
-                    return redirect(f'/?board={board.slug}')
+                    return redirect(f'/home/?board={board.slug}')
             return redirect('profile_feed', username=user.username)
 
         if action == 'send_chat':
@@ -1692,7 +1696,7 @@ def post_detail(request, post_id):
             author_username = post.author.username if post.author else None
             post.delete()
             if board_slug:
-                return redirect(f'/?board={board_slug}')
+                return redirect(f'/home/?board={board_slug}')
             if author_username:
                 return redirect('profile_feed', username=author_username)
             return redirect('home')
@@ -1757,7 +1761,7 @@ def create(request):
         post = Post.objects.create(title=title, content=content, board=board, author=request.user)
         save_post_media(post, request.FILES.getlist('media'))
         if board:
-            return redirect(f'/?board={board.slug}')
+            return redirect(f'/home/?board={board.slug}')
         return redirect('home')
     return render(request, 'create.html', {'boards': TopicBoard.objects.all()})
 

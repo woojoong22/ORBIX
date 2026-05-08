@@ -8,7 +8,8 @@ from posts import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),
+    path('', views.landing, name='landing'),
+    path('home/', views.home, name='home'),
     path('u/<str:username>/', views.profile_feed, name='profile_feed'),
     path('api/users/<str:username>/follow/', views.follow_account, name='follow_account'),
     path('api/users/<str:username>/unfollow/', views.unfollow_account, name='unfollow_account'),

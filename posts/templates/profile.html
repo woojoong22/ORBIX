@@ -1088,7 +1088,7 @@
                         <div class="scroll-panel topic-board-group hidden" data-major-board-group="{{ major.category.id }}" data-major-name="{{ major.category.name }}">
                             {% for child in major.children %}
                             {% for board_item in child.boards %}
-                                <a class="board-row" href="/?board={{ board_item.board.slug }}" data-board-name="{{ board_item.board.name }} {{ major.category.name }} {{ child.category.name }}">
+                                <a class="board-row" href="{% url 'home' %}?board={{ board_item.board.slug }}" data-board-name="{{ board_item.board.name }} {{ major.category.name }} {{ child.category.name }}">
                                     {{ board_item.board.name }}
                                     <span>{{ major.category.name }} > {{ child.category.name }}</span>
                                 </a>
@@ -1103,7 +1103,7 @@
                 <p class="metric">게시글과 채팅이 많은 게시판 TOP 10입니다.</p>
                 <div class="scroll-panel">
                     {% for board in popular_boards %}
-                        <a class="board-row" href="/?board={{ board.slug }}" data-board-name="{{ board.name }} {{ board.category.parent.name }} {{ board.category.name }}">
+                        <a class="board-row" href="{% url 'home' %}?board={{ board.slug }}" data-board-name="{{ board.name }} {{ board.category.parent.name }} {{ board.category.name }}">
                             {{ board.name }}
                             <span>{{ board.category.parent.name }} > {{ board.category.name }} · 글 {{ board.post_count }} · 채팅 {{ board.chat_count }}</span>
                         </a>
