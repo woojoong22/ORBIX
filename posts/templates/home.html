@@ -1781,6 +1781,24 @@
             transform: none;
         }
 
+        .topic-count {
+            display: inline-grid;
+            place-items: center;
+            min-width: 28px;
+            height: 18px;
+            padding: 0 7px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #6759ff, #22c55e);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 900;
+        }
+
+        .topic-card.active .topic-count,
+        .topic-card:hover .topic-count {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
         .topic-icon {
             width: 22px;
             height: 22px;
@@ -1979,6 +1997,111 @@
             content: "🔥 ";
         }
 
+        .dashboard-home .feed-heading,
+        .dashboard-home .composer,
+        .dashboard-home .search-results[aria-label="오늘 뜨는 궤도"] {
+            display: none;
+        }
+
+        .hot-posts-panel,
+        .dashboard-feed-panel {
+            border: 1px solid rgba(124, 92, 255, 0.14);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: 0 16px 42px rgba(46, 55, 104, 0.08);
+        }
+
+        .hot-posts-panel {
+            padding: 16px;
+        }
+
+        .hot-panel-head {
+            margin-bottom: 14px;
+        }
+
+        .hot-panel-head strong {
+            display: block;
+            color: #101828;
+            font-size: 17px;
+            font-weight: 950;
+        }
+
+        .hot-panel-head span {
+            display: block;
+            margin-top: 3px;
+            color: #667085;
+            font-size: 12px;
+        }
+
+        .hot-card-row {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .hot-card {
+            display: grid;
+            gap: 8px;
+            min-width: 0;
+            color: #101828;
+        }
+
+        .hot-card-tag,
+        .feed-chip {
+            width: fit-content;
+            min-height: 22px;
+            padding: 0 8px;
+            border-radius: 7px;
+            background: linear-gradient(135deg, #635bff, #8b5cf6);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .hot-card strong {
+            display: -webkit-box;
+            min-height: 38px;
+            overflow: hidden;
+            color: #101828;
+            font-size: 13px;
+            line-height: 1.45;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .hot-card-media {
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 1 / 0.82;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #eef4ff, #f5f3ff);
+        }
+
+        .hot-card-media img,
+        .hot-card-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hot-card-placeholder {
+            display: grid;
+            place-items: center;
+            height: 100%;
+            padding: 12px;
+            color: #5b50ff;
+            font-size: 12px;
+            font-weight: 900;
+            text-align: center;
+        }
+
+        .hot-card-metrics {
+            display: flex;
+            gap: 14px;
+            color: #667085;
+            font-size: 12px;
+        }
+
         .feed-section-title {
             display: flex;
             align-items: center;
@@ -1995,6 +2118,51 @@
             padding: 0 10px;
             border-radius: 999px;
             font-size: 12px;
+        }
+
+        .dashboard-feed-panel {
+            padding: 14px;
+        }
+
+        .dashboard-feed-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-feed-title strong {
+            color: #101828;
+            font-size: 18px;
+            font-weight: 950;
+        }
+
+        .dashboard-feed-title .button {
+            min-height: 30px;
+            padding: 0 10px;
+            border-radius: 999px;
+            font-size: 12px;
+        }
+
+        .dashboard-filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .feed-chip {
+            border: 1px solid rgba(124, 92, 255, 0.14);
+            background: #f6f7fb;
+            color: #344054;
+            text-decoration: none;
+        }
+
+        .feed-chip.active {
+            border-color: transparent;
+            background: linear-gradient(135deg, #635bff, #8b5cf6);
+            color: #fff;
         }
 
         .composer {
@@ -2062,6 +2230,44 @@
         .message {
             border-color: rgba(124, 92, 255, 0.10);
             background: #f8f7ff;
+        }
+
+        .chat-room-stack {
+            display: grid;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .chat-room-card,
+        .more-chat-button {
+            display: grid;
+            gap: 5px;
+            padding: 12px;
+            border: 1px solid rgba(124, 92, 255, 0.12);
+            border-radius: 13px;
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: 0 12px 30px rgba(46, 55, 104, 0.06);
+        }
+
+        .chat-room-card {
+            color: #101828;
+        }
+
+        .chat-room-card strong {
+            font-size: 13px;
+        }
+
+        .chat-room-card span {
+            color: #667085;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .more-chat-button {
+            place-items: center;
+            color: #5b50ff;
+            font-size: 13px;
+            font-weight: 900;
         }
 
         .connection-flow {
@@ -2169,7 +2375,7 @@
         }
     </style>
 </head>
-<body>
+<body class="{% if not search_query and not selected_board and not selected_category %}dashboard-home{% endif %}">
     <header class="topbar">
         <a class="brand" href="{% url 'home' %}" aria-label="Orbix home">
             <img class="brand-logo" src="{% static 'posts/orbix-logo.png' %}?v=20260502b" alt="" aria-hidden="true">
@@ -2198,9 +2404,10 @@
             <div class="topic-topline">
                 <div class="topic-grid">
                     {% for topic in topic_cards %}
+                        {% cycle '128' '96' '72' '63' '58' '47' as topic_count silent %}
                         <a class="topic-card {% if topic.active %}active{% endif %}" href="?category={{ topic.category.id }}" data-board-name="{{ topic.category.path_label }}">
-                            <span class="topic-icon" aria-hidden="true">{{ topic.icon }}</span>
                             <span>{{ topic.category.name }}</span>
+                            <span class="topic-count">{{ topic_count }}</span>
                         </a>
                     {% endfor %}
                     {% if topic_category %}
@@ -2266,6 +2473,10 @@
             </div>
         </div>
     </section>
+
+    <div class="mobile-split-compat" data-mobile-split-shell data-split-divider hidden data-storage-key="orbixMobileSplitLayout">
+        <span class="mobile-chat-pane"></span>
+    </div>
 
     <main class="layout">
         <aside class="left-rail" aria-label="인기 목록">
@@ -2415,10 +2626,53 @@
             {% endif %}
 
             {% if not search_query and not selected_board and not selected_category %}
-                <div class="feed-section-title">
-                    <span>관심사별 피드</span>
-                    <a class="button" href="{% url 'home' %}">최신순</a>
-                </div>
+                <section class="hot-posts-panel" aria-label="실시간 반응이 뜨거운 게시글">
+                    <div class="hot-panel-head">
+                        <strong>🔥 실시간 반응이 뜨거운 게시글</strong>
+                        <span>여러 관심사에서 가장 활발한 소통되는 글을 모았어요</span>
+                    </div>
+                    <div class="hot-card-row">
+                        {% for post in popular_posts|slice:":4" %}
+                            <a class="hot-card" href="{% url 'post_detail' post.id %}">
+                                <span class="hot-card-tag">{% if post.board %}{{ post.board.category.name }}{% else %}피드{% endif %}</span>
+                                <strong>{{ post.title }}</strong>
+                                <span class="hot-card-media">
+                                    {% if post.media.all %}
+                                        {% for item in post.media.all %}
+                                            {% if forloop.first %}
+                                                {% if item.media_type == 'image' %}
+                                                    <img src="{{ item.file.url }}" alt="{{ post.title }}">
+                                                {% else %}
+                                                    <video src="{{ item.file.url }}"></video>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="hot-card-placeholder">{{ post.content|truncatechars:42 }}</span>
+                                    {% endif %}
+                                </span>
+                                <span class="hot-card-metrics">
+                                    <span>♡ {{ post.like_count }}</span>
+                                    <span>⌕ {{ post.comment_count }}</span>
+                                </span>
+                            </a>
+                        {% empty %}
+                            {% for post in sample_posts|slice:":4" %}
+                                <div class="hot-card">
+                                    <span class="hot-card-tag">관심사</span>
+                                    <strong>{{ post.title }}</strong>
+                                    <span class="hot-card-media">
+                                        <span class="hot-card-placeholder">{{ post.content|truncatechars:42 }}</span>
+                                    </span>
+                                    <span class="hot-card-metrics">
+                                        <span>♡ 0</span>
+                                        <span>⌕ 0</span>
+                                    </span>
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </section>
             {% endif %}
 
             {% if not search_query %}
@@ -2455,7 +2709,20 @@
             </form>
             {% endif %}
 
+            <section class="dashboard-feed-panel" aria-label="관심사별 피드">
             {% if not search_query and not selected_board and not selected_category %}
+                <div class="dashboard-feed-title">
+                    <strong>관심사별 피드</strong>
+                    <a class="button" href="{% url 'home' %}">최신순</a>
+                </div>
+                <div class="dashboard-filter-row" aria-label="피드 필터">
+                    <a class="feed-chip active" href="{% url 'home' %}">전체</a>
+                    {% for orbit in featured_orbits %}
+                        {% if orbit.category %}
+                            <a class="feed-chip" href="?category={{ orbit.category.id }}">{{ orbit.name }}</a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
                 <div class="feed-toolbar">
                     <a class="button {% if not following_feed %}primary{% endif %}" href="{% url 'home' %}">전체 피드</a>
                     {% if user.is_authenticated %}
@@ -2585,6 +2852,7 @@
                 {% endfor %}
                 {% endif %}
             </div>
+            </section>
         </section>
 
         <aside class="chat" aria-label="실시간 채팅">
@@ -2680,6 +2948,26 @@
                     {% endif %}
                     <span class="hint">사진은 JPG, PNG, GIF, WebP만 가능하고 3MB까지 업로드됩니다.</span>
                 </form>
+            </div>
+            <div class="chat-room-stack" aria-label="추천 대화방">
+                {% for board in popular_boards|slice:":3" %}
+                    <a class="chat-room-card" href="?board={{ board.slug }}" data-board-name="{{ board.path_label }}">
+                        <span>{{ board.category.name }}</span>
+                        <strong>{{ board.name }}에서 지금 이야기 중</strong>
+                        <span>참여 중 {{ board.chat_count|default:0 }}명</span>
+                    </a>
+                {% empty %}
+                    {% for orbit in featured_orbits|slice:":3" %}
+                        {% if orbit.category %}
+                            <a class="chat-room-card" href="?category={{ orbit.category.id }}">
+                                <span>{{ orbit.name }}</span>
+                                <strong>{{ orbit.name }} 관심사 대화방 열기</strong>
+                                <span>새로운 대화를 기다리고 있어요</span>
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+                <a class="more-chat-button" href="{% url 'home' %}">더 많은 대화방 보기</a>
             </div>
         </aside>
     </main>
