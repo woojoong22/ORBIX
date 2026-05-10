@@ -64,6 +64,11 @@
             background: #fff;
         }
 
+        .media-status {
+            color: #2563eb;
+            font-weight: 800;
+        }
+
         .actions {
             display: flex;
             gap: 8px;
@@ -105,8 +110,8 @@
             <input type="text" name="title" maxlength="200" placeholder="제목" required>
             <textarea name="content" placeholder="내용" required></textarea>
             <div class="media-upload">
-                <input type="file" name="media" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime" multiple>
-                <span>사진은 최대 20장, 3MB 초과 사진은 자동 압축됩니다.</span>
+                <input data-media-input type="file" name="media" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime" multiple>
+                <span data-media-hint>사진은 최대 20장, 3MB 초과 사진은 자동 압축됩니다.</span>
             </div>
             <div class="actions">
                 <a href="{% url 'home' %}">취소</a>
@@ -114,6 +119,21 @@
             </div>
         </form>
     </main>
+    <script>
+        document.querySelectorAll("[data-media-input]").forEach((input) => {
+            input.addEventListener("change", () => {
+                const hint = input.closest(".media-upload")?.querySelector("[data-media-hint]");
+                if (!hint) return;
+                if (!input.files.length) {
+                    hint.textContent = "사진은 최대 20장, 3MB 초과 사진은 자동 압축됩니다.";
+                    hint.classList.remove("media-status");
+                    return;
+                }
+                hint.textContent = input.files.length === 1 ? input.files[0].name : `${input.files.length}개 파일 선택됨`;
+                hint.classList.add("media-status");
+            });
+        });
+    </script>
 </body>
 </html>
 

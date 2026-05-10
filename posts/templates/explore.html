@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="panel">
+  <h1>탐색</h1>
+  {% if posts %}
+    <div class="post-list">
+      {% for post in posts %}
+        <article class="post-card" onclick="window.location.href='{% url 'post_detail' post.id %}'">
+          <h2>{{ post.title }}</h2>
+          <p>{{ post.content|truncatechars:140 }}</p>
+          <div class="post-meta">
+            <span>{{ post.author.profile.display_name|default:post.author.username|default:"익명" }}</span>
+            <span>좋아요 {{ post.like_count|default:0 }}</span>
+            <span>댓글 {{ post.comment_count|default:0 }}</span>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>아직 탐색할 게시글이 없습니다.</p>
+  {% endif %}
+</section>
+{% endblock %}

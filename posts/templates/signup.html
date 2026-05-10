@@ -1,83 +1,80 @@
-﻿<!DOCTYPE html>
+{% load static %}
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>가입 · Orbix</title>
-    <style>
-        body {
-            display: grid;
-            place-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background: #eef1f5;
-            color: #16181d;
-            font-family: Arial, "Noto Sans KR", sans-serif;
-        }
-
-        main {
-            width: min(420px, calc(100% - 24px));
-            padding: 24px;
-            border: 1px solid #d9dee8;
-            border-radius: 8px;
-            background: #fff;
-        }
-
-        h1 {
-            margin: 0 0 18px;
-            font-size: 26px;
-        }
-
-        input {
-            width: 100%;
-            height: 42px;
-            margin-bottom: 12px;
-            padding: 0 12px;
-            border: 1px solid #d9dee8;
-            border-radius: 8px;
-            font: inherit;
-            box-sizing: border-box;
-        }
-
-        button,
-        a {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 40px;
-            padding: 0 14px;
-            border-radius: 8px;
-            font-weight: 700;
-            text-decoration: none;
-        }
-
-        button {
-            width: 100%;
-            border: 0;
-            background: #e5484d;
-            color: #fff;
-            cursor: pointer;
-            font: inherit;
-        }
-
-        a {
-            margin-top: 12px;
-            color: #16181d;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>가입 · ORBIX</title>
+  <meta name="theme-color" content="#0a1024">
+  <link rel="manifest" href="{% url 'webmanifest' %}">
+  <link rel="apple-touch-icon" href="{% static 'posts/orbix-logo.png' %}">
+  <link rel="stylesheet" href="{% static 'posts/orbix.css' %}">
 </head>
 <body>
-    <main>
-        <h1>가입</h1>
-        <form method="post">
-            {% csrf_token %}
-            <input type="text" name="username" placeholder="아이디" autocomplete="username" required>
-            <input type="password" name="password" placeholder="비밀번호" autocomplete="new-password" required>
-            <button type="submit">가입</button>
-        </form>
-        <a href="{% url 'login' %}">이미 계정이 있어요</a>
-        <a href="{% url 'home' %}">홈으로</a>
-    </main>
+
+<div class="auth-page">
+  <div class="auth-card">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+      <div class="logo-icon" style="animation: orbitSpin 6s linear infinite; background: linear-gradient(135deg, var(--accent-dark), var(--accent));">◎</div>
+      <span class="logo-text">ORBIX</span>
+    </div>
+
+    <div class="auth-title">오빗에 합류하기</div>
+    <div class="auth-subtitle">새 계정을 만들고 궤도에 진입하세요</div>
+
+    {% if error %}
+    <div class="form-error" style="margin-bottom:16px; padding:12px; background:rgba(239,68,68,0.1); border-radius:8px; border:1px solid rgba(239,68,68,0.3);">
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label class="form-label" for="username">아이디</label>
+        <input class="form-control" type="text"
+               name="username" id="username"
+               placeholder="사용할 아이디를 입력하세요"
+               autocomplete="username"
+               value="{{ request.POST.username|default:'' }}"
+               required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">비밀번호</label>
+        <input class="form-control" type="password"
+               name="password" id="password"
+               placeholder="비밀번호를 입력하세요"
+               autocomplete="new-password"
+               required>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px; font-size:15px; padding:12px;">
+        궤도 진입 ◎
+      </button>
+    </form>
+
+    <div style="text-align:center; margin-top:20px; font-size:13px; color:var(--text-muted);">
+      이미 계정이 있으신가요?
+      <a href="{% url 'login' %}" class="text-accent" style="font-weight:600;">로그인</a>
+    </div>
+
+    <div style="text-align:center; margin-top:12px;">
+      <a href="{% url 'home' %}" class="text-muted" style="font-size:12px;">홈으로 돌아가기</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("{% url 'service_worker' %}").catch(() => {});
+    });
+  }
+</script>
 </body>
 </html>
-

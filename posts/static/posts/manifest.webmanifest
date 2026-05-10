@@ -1,0 +1,40 @@
+{
+  "name": "ORBIX",
+  "short_name": "ORBIX",
+  "description": "ORBIX community orbit feed, boards, chat, and personal spaces.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#050814",
+  "theme_color": "#0a1024",
+  "orientation": "portrait-primary",
+  "categories": ["social", "productivity", "news"],
+  "icons": [
+    {
+      "src": "/static/posts/orbix-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/posts/orbix-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Home Feed",
+      "short_name": "Home",
+      "url": "/home/",
+      "description": "Open the ORBIX feed"
+    },
+    {
+      "name": "Create Post",
+      "short_name": "Post",
+      "url": "/create/",
+      "description": "Create a new ORBIX post"
+    }
+  ]
+}

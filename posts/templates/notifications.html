@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="panel">
+  <h1>알림</h1>
+  {% if notifications %}
+    <div class="stack">
+      {% for notification in notifications %}
+        <article class="post-card">
+          <strong>{{ notification.actor.profile.display_name|default:notification.actor.username|default:"ORBIX" }}</strong>
+          <span>{{ notification.verb }}</span>
+          {% if notification.post %}
+            <a href="{% url 'post_detail' notification.post.id %}">{{ notification.post.title }}</a>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>새 알림이 없습니다.</p>
+  {% endif %}
+</section>
+{% endblock %}

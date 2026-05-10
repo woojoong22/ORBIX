@@ -4,7 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0a1024">
     <title>ORBIX</title>
+    <link rel="manifest" href="{% url 'webmanifest' %}">
+    <link rel="apple-touch-icon" href="{% static 'posts/orbix-logo.png' %}">
     <style>
         :root {
             --ink: #f8fbff;
@@ -189,5 +192,12 @@
             </div>
         </section>
     </main>
+<script>
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+            navigator.serviceWorker.register("{% url 'service_worker' %}").catch(() => {});
+        });
+    }
+</script>
 </body>
 </html>

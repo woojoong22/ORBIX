@@ -4,7 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0a1024">
     <title>Orbix</title>
+    <link rel="manifest" href="{% url 'webmanifest' %}">
+    <link rel="apple-touch-icon" href="{% static 'posts/orbix-logo.png' %}">
     <style>
         :root {
             --ink: #17191f;
@@ -114,9 +117,8 @@
 
         .search {
             width: 100%;
-            max-width: 620px;
             height: 40px;
-            padding: 0 16px;
+            padding: 0 14px;
             border: 1px solid var(--line);
             border-radius: 8px;
             background: rgba(255, 255, 255, 0.86);
@@ -124,6 +126,29 @@
             font-size: 14px;
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), var(--shadow-soft);
             transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .search-form {
+            width: 100%;
+            max-width: 620px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 44px;
+            gap: 8px;
+        }
+
+        .search-button {
+            display: grid;
+            place-items: center;
+            width: 44px;
+            height: 40px;
+            border: 0;
+            border-radius: 8px;
+            background: var(--blue);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
         }
 
         .search:focus {
@@ -166,6 +191,51 @@
             background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 52%, #d946ef 100%);
             color: #fff;
             box-shadow: 0 10px 22px rgba(99, 102, 241, 0.24);
+        }
+
+        .search-results {
+            display: grid;
+            gap: 12px;
+            padding: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.78);
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 16px;
+        }
+
+        .search-result-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .search-chip {
+            display: inline-flex;
+            align-items: center;
+            min-height: 32px;
+            padding: 0 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.42);
+            background: rgba(255, 255, 255, 0.84);
+            color: var(--ink);
+            font-size: 13px;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .search-create-form {
+            display: inline-flex;
+        }
+
+        .search-empty {
+            padding: 20px;
+            border: 1px dashed rgba(148, 163, 184, 0.55);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.68);
+            color: var(--muted);
+            font-weight: 800;
+            text-align: center;
         }
 
         .layout {
@@ -1004,6 +1074,12 @@
             margin: 12px 0;
         }
 
+        .media-status {
+            color: var(--blue);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
         .media-upload input {
             width: auto;
             height: auto;
@@ -1056,6 +1132,7 @@
             overflow: hidden;
             border-color: rgba(216, 224, 236, 0.94);
             background: rgba(255, 255, 255, 0.97);
+            cursor: pointer;
             transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
         }
 
@@ -1071,6 +1148,27 @@
             gap: 10px;
             padding: 13px 14px 10px;
             background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+        }
+
+        .post a {
+            position: relative;
+            z-index: 1;
+        }
+
+        .post-author-link {
+            display: inline-grid;
+            place-items: center;
+            flex: 0 0 auto;
+            border-radius: 50%;
+        }
+
+        .post-meta-link {
+            font-weight: 700;
+        }
+
+        .post-meta-link:hover,
+        .meta a:hover {
+            color: var(--blue);
         }
 
         .post-follow-form {
@@ -1110,9 +1208,8 @@
         }
 
         .post-media.has-files {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 2px;
+            position: relative;
+            display: block;
             min-height: 0;
             padding: 0;
             background: #111;
@@ -1122,18 +1219,26 @@
         .post-media.has-files video {
             display: block;
             width: 100%;
-            aspect-ratio: 1 / 1;
+            aspect-ratio: 16 / 10;
             object-fit: cover;
             background: #111;
         }
 
-        .post-media.has-files .single-media {
-            grid-column: 1 / -1;
-        }
-
-        .post-media.has-files .single-media img,
-        .post-media.has-files .single-media video {
-            aspect-ratio: 16 / 10;
+        .media-count-badge {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            display: inline-grid;
+            place-items: center;
+            min-width: 42px;
+            height: 32px;
+            padding: 0 10px;
+            border-radius: 999px;
+            background: rgba(17, 24, 39, 0.78);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 900;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.26);
         }
 
         .post-media h2 {
@@ -1203,6 +1308,7 @@
         }
 
         .chat-head {
+            position: relative;
             padding: 12px 14px;
             border-bottom: 1px solid var(--line);
             font-weight: 800;
@@ -1220,7 +1326,9 @@
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
+            max-height: 28px;
             margin-top: 10px;
+            overflow: hidden;
         }
 
         .chat-tab {
@@ -1243,11 +1351,100 @@
             color: var(--blue);
         }
 
-        .private-chat-picker {
+        .recent-chat-link,
+        .recent-chat-more {
+            display: inline-flex;
+            align-items: center;
+            max-width: 132px;
+            min-height: 26px;
+            padding: 0 9px;
+            border: 1px solid rgba(216, 224, 236, 0.9);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.78);
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .recent-chat-link {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .recent-chat-link[hidden] {
+            display: none;
+        }
+
+        .recent-chat-link:hover {
+            border-color: var(--blue);
+            background: var(--blue-soft);
+            color: var(--blue);
+        }
+
+        .recent-chat-more {
+            display: none;
+            color: var(--blue);
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .recent-chat-menu {
+            position: absolute;
+            right: 14px;
+            top: 84px;
+            z-index: 20;
+            display: none;
+            width: min(240px, calc(100% - 28px));
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 6px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 18px 42px rgba(25, 31, 44, 0.16);
+        }
+
+        .recent-chat-menu.open {
             display: grid;
+            gap: 4px;
+        }
+
+        .recent-chat-menu a {
+            display: block;
+            overflow: hidden;
+            padding: 8px 10px;
+            border-radius: 8px;
+            color: var(--ink);
+            font-size: 12px;
+            font-weight: 800;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .recent-chat-menu a:hover {
+            background: var(--blue-soft);
+            color: var(--blue);
+        }
+
+        .private-chat-picker {
+            position: absolute;
+            right: 14px;
+            top: 84px;
+            z-index: 21;
+            display: none;
             grid-template-columns: 1fr auto;
             gap: 6px;
-            margin-top: 8px;
+            width: min(260px, calc(100% - 28px));
+            padding: 8px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 18px 42px rgba(25, 31, 44, 0.16);
+        }
+
+        .private-chat-picker.open {
+            display: grid;
         }
 
         .private-chat-picker select {
@@ -1259,6 +1456,11 @@
             background: #fff;
             font: inherit;
             font-size: 12px;
+        }
+
+        .chat-tab-button {
+            cursor: pointer;
+            font: inherit;
         }
 
         .live {
@@ -1489,7 +1691,10 @@
             <img class="brand-logo" src="{% static 'posts/orbix-logo.png' %}?v=20260502b" alt="" aria-hidden="true">
             <span class="brand-wordmark">Orbix</span>
         </a>
-        <input class="search" type="search" placeholder="게시판, 개인 피드, 채팅 검색" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <form class="search-form" action="{% url 'home' %}" method="get" role="search">
+            <input class="search" name="q" value="{{ search_query }}" type="search" placeholder="게시판, 개인 피드, 게시글 검색" autocomplete="off" autocapitalize="off" spellcheck="false">
+            <button class="search-button" type="submit" title="검색" aria-label="검색">⌕</button>
+        </form>
         <nav class="nav-actions" aria-label="계정 메뉴">
             {% if user.is_authenticated %}
                 <a class="button" href="{% url 'profile_feed' user.username %}">내 피드</a>
@@ -1555,10 +1760,10 @@
                             </a>
                         {% endif %}
                     {% empty %}
-                        <span class="subtopic-pill active">
+                        <button class="subtopic-pill active" type="button" data-focus-board-search>
                             <span class="subtopic-icon" aria-hidden="true">＋</span>
                             <span>새 궤도 생성</span>
-                        </span>
+                        </button>
                     {% endfor %}
                 </div>
             {% endif %}
@@ -1625,7 +1830,10 @@
         <section class="feed-column" aria-label="피드">
             <div class="feed-heading">
                 <div>
-                    {% if selected_board %}
+                    {% if search_query %}
+                        <h1>"{{ search_query }}" 검색</h1>
+                        <p>게시판, 카테고리, 사용자, 게시글을 함께 찾았습니다.</p>
+                    {% elif selected_board %}
                         <h1>{{ selected_board.name }}</h1>
                         <p>{{ selected_board.category.path_label }} 게시판</p>
                     {% elif selected_category %}
@@ -1636,11 +1844,57 @@
                         <p>주제 게시판 글과 사람들의 개인 피드가 함께 흐릅니다.</p>
                     {% endif %}
                 </div>
-                {% if selected_board or selected_category %}
+                {% if search_query or selected_board or selected_category %}
                     <a class="button" href="{% url 'home' %}">전체 보기</a>
                 {% endif %}
             </div>
 
+            {% if search_query %}
+                <section class="search-results" aria-label="검색 바로가기">
+                    <div>
+                        <strong>빠른 이동</strong>
+                        <span class="hint">원하는 궤도나 피드를 바로 열 수 있어요.</span>
+                    </div>
+                    <div class="search-result-row">
+                        {% for board in search_boards %}
+                            <a class="search-chip" href="?board={{ board.slug }}">{{ board.name }} · {{ board.category.path_label }}</a>
+                        {% endfor %}
+                        {% for category in search_categories %}
+                            <a class="search-chip" href="?category={{ category.id }}">{{ category.path_label }}</a>
+                        {% endfor %}
+                        {% for profile in search_profiles %}
+                            <a class="search-chip" href="{% url 'profile_feed' profile.user.username %}">@{{ profile.display_name }}</a>
+                        {% endfor %}
+                        {% if not search_boards and not search_categories and not search_profiles %}
+                            <form class="search-create-form" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="create_board">
+                                <input type="hidden" name="category_id" value="{{ board_search_category.id }}">
+                                <input type="hidden" name="board_name" value="{{ search_query }}">
+                                <button class="search-chip" type="submit">"{{ search_query }}" 궤도 만들기</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </section>
+            {% endif %}
+
+            {% if featured_orbits %}
+                <section class="search-results" aria-label="오늘 뜨는 궤도">
+                    <div>
+                        <strong>오늘 뜨는 궤도</strong>
+                        <span class="hint">실시간성이 높은 주제를 먼저 열어볼 수 있어요.</span>
+                    </div>
+                    <div class="search-result-row">
+                        {% for orbit in featured_orbits %}
+                            {% if orbit.category %}
+                                <a class="search-chip" href="?category={{ orbit.category.id }}">{{ orbit.icon }} {{ orbit.name }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+
+            {% if not search_query %}
             <form class="composer" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {% if selected_board %}
@@ -1656,9 +1910,9 @@
                     <div class="media-upload">
                         <label class="media-pill">
                             + 사진/영상
-                            <input type="file" name="media" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime" multiple>
+                            <input data-media-input type="file" name="media" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime" multiple>
                         </label>
-                        <span class="hint">사진은 최대 20장, 3MB 초과 사진은 자동 압축됩니다.</span>
+                        <span class="hint" data-media-hint>사진은 최대 20장, 3MB 초과 사진은 자동 압축됩니다.</span>
                     </div>
                     <div class="composer-actions">
                         <span class="hint">
@@ -1672,27 +1926,36 @@
                     </div>
                 </div>
             </form>
+            {% endif %}
 
-            <div class="feed-toolbar">
-                <a class="button {% if not following_feed %}primary{% endif %}" href="{% url 'home' %}">전체 피드</a>
-                {% if user.is_authenticated %}
-                    <a class="button {% if following_feed %}primary{% endif %}" href="?feed=following">구독 피드</a>
-                {% else %}
-                    <a class="button" href="{% url 'login' %}">구독 피드</a>
-                {% endif %}
-            </div>
+            {% if not search_query and not selected_board and not selected_category %}
+                <div class="feed-toolbar">
+                    <a class="button {% if not following_feed %}primary{% endif %}" href="{% url 'home' %}">전체 피드</a>
+                    {% if user.is_authenticated %}
+                        <a class="button {% if following_feed %}primary{% endif %}" href="?feed=following">구독 피드</a>
+                    {% else %}
+                        <a class="button" href="{% url 'login' %}">구독 피드</a>
+                    {% endif %}
+                </div>
+            {% endif %}
 
             <div class="feed">
                 {% for post in posts %}
-                    <article class="post">
+                    <article class="post" data-post-url="{% url 'post_detail' post.id %}" role="link" tabindex="0">
                         <div class="post-head">
-                            <div class="avatar">
-                                {% if post.author and post.author.profile %}
-                                    {{ post.author.profile.display_name|first|upper }}
-                                {% else %}
-                                    {{ post.title|first|upper }}
-                                {% endif %}
-                            </div>
+                            {% if post.author %}
+                                <a class="post-author-link" href="{% url 'profile_feed' post.author.username %}" aria-label="{{ post.author.profile.display_name|default:post.author.username }} 피드">
+                                    <span class="avatar">
+                                        {% if post.author.profile %}
+                                            {{ post.author.profile.display_name|first|upper }}
+                                        {% else %}
+                                            {{ post.author.username|first|upper }}
+                                        {% endif %}
+                                    </span>
+                                </a>
+                            {% else %}
+                                <div class="avatar">{{ post.title|first|upper }}</div>
+                            {% endif %}
                             <div class="meta">
                                 <strong><a href="{% url 'post_detail' post.id %}">{{ post.title }}</a></strong>
                                 <span>
@@ -1703,7 +1966,17 @@
                                     {% endif %}
                                     ·
                                     {% if post.board %}
-                                        {{ post.board.path_label }}
+                                        {% if post.board.category.parent %}
+                                            {% if post.board.category.parent.parent %}
+                                                <a class="post-meta-link" href="?category={{ post.board.category.parent.parent.id }}">{{ post.board.category.parent.parent.name }}</a>
+                                                >
+                                            {% endif %}
+                                            <a class="post-meta-link" href="?category={{ post.board.category.parent.id }}">{{ post.board.category.parent.name }}</a>
+                                            >
+                                        {% endif %}
+                                        <a class="post-meta-link" href="?category={{ post.board.category.id }}">{{ post.board.category.name }}</a>
+                                        >
+                                        <a class="post-meta-link" href="?board={{ post.board.slug }}">{{ post.board.name }}</a>
                                     {% else %}
                                         미분류
                                     {% endif %}
@@ -1724,14 +1997,17 @@
                         {% if post.media.all %}
                             <div class="post-media has-files">
                                 {% for item in post.media.all %}
-                                    <div class="{% if post.media.all|length == 1 %}single-media{% endif %}">
+                                    {% if forloop.first %}
                                         {% if item.media_type == 'image' %}
                                             <img src="{{ item.file.url }}" alt="{{ post.title }}">
                                         {% else %}
                                             <video src="{{ item.file.url }}" controls></video>
                                         {% endif %}
-                                    </div>
+                                    {% endif %}
                                 {% endfor %}
+                                {% if post.media.all|length > 1 %}
+                                    <span class="media-count-badge">+{{ post.media.all|length|add:"-1" }}</span>
+                                {% endif %}
                             </div>
                         {% else %}
                             <div class="post-media">
@@ -1756,6 +2032,13 @@
                     </article>
                 {% endfor %}
 
+                {% if search_query and not posts %}
+                    <div class="search-empty">
+                        "{{ search_query }}"와 일치하는 게시글이 아직 없습니다. 검색어로 새 궤도를 만들어 시작해보세요.
+                    </div>
+                {% endif %}
+
+                {% if not search_query %}
                 {% for post in sample_posts %}
                     <article class="post">
                         <div class="post-head">
@@ -1773,6 +2056,7 @@
                         </div>
                     </article>
                 {% endfor %}
+                {% endif %}
             </div>
         </section>
 
@@ -1783,7 +2067,7 @@
                         <span>{{ chat_title }}</span>
                         <span class="live"><span class="dot"></span>온라인</span>
                     </div>
-                    <div class="chat-tabs">
+                    <div class="chat-tabs" data-recent-chat-strip>
                         <a class="chat-tab {% if chat_scope == 'global' %}active{% endif %}" href="{% url 'home' %}">전체</a>
                         {% if selected_category %}
                             <a class="chat-tab {% if chat_scope == 'category' %}active{% endif %}" href="?category={{ selected_category.id }}&chat=category">{{ selected_category.name }}</a>
@@ -1791,13 +2075,20 @@
                             <a class="chat-tab {% if chat_scope == 'board' %}active{% endif %}" href="?board={{ selected_board.slug }}">{{ selected_board.name }}</a>
                         {% endif %}
                         {% if user.is_authenticated and private_user %}
-                            <a class="chat-tab active" href="?chat=private&private_user={{ private_user.id }}">개인</a>
+                            <button class="chat-tab chat-tab-button active" type="button" data-private-chat-toggle aria-expanded="false">개인</button>
                         {% elif user.is_authenticated %}
-                            <span class="chat-tab">개인</span>
+                            <button class="chat-tab chat-tab-button" type="button" data-private-chat-toggle aria-expanded="false">개인</button>
+                        {% endif %}
+                        {% if recent_chat_links %}
+                            {% for chat_link in recent_chat_links %}
+                                <a class="recent-chat-link" href="{{ chat_link.href }}" data-recent-chat-link>{{ chat_link.label }}</a>
+                            {% endfor %}
+                            <button class="recent-chat-more" type="button" data-recent-chat-more aria-expanded="false" aria-label="숨겨진 최근 채팅 보기"></button>
                         {% endif %}
                     </div>
+                    <div class="recent-chat-menu" data-recent-chat-menu></div>
                     {% if user.is_authenticated %}
-                        <form class="private-chat-picker" method="get">
+                        <form class="private-chat-picker" method="get" data-private-chat-picker>
                             <input type="hidden" name="chat" value="private">
                             <select name="private_user" aria-label="개인채팅 상대">
                                 {% for person in profiles %}
@@ -1895,6 +2186,13 @@
             boardSearch.addEventListener("input", filterBoards);
         }
 
+        document.querySelectorAll("[data-focus-board-search]").forEach((button) => {
+            button.addEventListener("click", () => {
+                boardSearch?.scrollIntoView({ behavior: "smooth", block: "center" });
+                boardSearch?.focus();
+            });
+        });
+
         if (boardSearchForm) {
             boardSearchForm.addEventListener("submit", (event) => {
                 event.preventDefault();
@@ -1912,6 +2210,119 @@
             });
         }
 
+        function fitRecentChatStrip() {
+            document.querySelectorAll("[data-recent-chat-strip]").forEach((strip) => {
+                const links = Array.from(strip.querySelectorAll("[data-recent-chat-link]"));
+                const more = strip.querySelector("[data-recent-chat-more]");
+                const menu = strip.closest(".chat-head")?.querySelector("[data-recent-chat-menu]");
+                if (!more || !links.length) return;
+
+                links.forEach((link) => {
+                    link.hidden = false;
+                });
+                more.style.display = "none";
+                more.textContent = "";
+                more.setAttribute("aria-expanded", "false");
+                if (menu) {
+                    menu.classList.remove("open");
+                    menu.innerHTML = "";
+                }
+
+                const firstTop = strip.firstElementChild ? strip.firstElementChild.offsetTop : links[0].offsetTop;
+                let hiddenCount = 0;
+                links.forEach((link) => {
+                    if (link.offsetTop > firstTop) {
+                        link.hidden = true;
+                        hiddenCount += 1;
+                    }
+                });
+
+                if (hiddenCount > 0) {
+                    more.textContent = `+${hiddenCount}`;
+                    more.style.display = "inline-flex";
+                    if (more.offsetTop > firstTop) {
+                        let index = links.length - hiddenCount - 1;
+                        while (index >= 0 && more.offsetTop > firstTop) {
+                            links[index].hidden = true;
+                            hiddenCount += 1;
+                            more.textContent = `+${hiddenCount}`;
+                            index -= 1;
+                        }
+                    }
+                    if (menu) {
+                        links.filter((link) => link.hidden).forEach((link) => {
+                            const menuLink = document.createElement("a");
+                            menuLink.href = link.href;
+                            menuLink.textContent = link.textContent;
+                            menu.appendChild(menuLink);
+                        });
+                    }
+                }
+            });
+        }
+
+        fitRecentChatStrip();
+        window.addEventListener("resize", fitRecentChatStrip);
+
+        document.querySelectorAll("[data-recent-chat-more]").forEach((button) => {
+            button.addEventListener("click", (event) => {
+                event.stopPropagation();
+                const menu = button.closest(".chat-head")?.querySelector("[data-recent-chat-menu]");
+                if (!menu) return;
+                const privatePicker = button.closest(".chat-head")?.querySelector("[data-private-chat-picker]");
+                const privateToggle = button.closest(".chat-head")?.querySelector("[data-private-chat-toggle]");
+                if (privatePicker) {
+                    privatePicker.classList.remove("open");
+                }
+                if (privateToggle) {
+                    privateToggle.setAttribute("aria-expanded", "false");
+                }
+                const isOpen = menu.classList.toggle("open");
+                button.setAttribute("aria-expanded", String(isOpen));
+            });
+        });
+
+        document.querySelectorAll("[data-private-chat-toggle]").forEach((button) => {
+            button.addEventListener("click", (event) => {
+                event.stopPropagation();
+                const chatHead = button.closest(".chat-head");
+                const picker = chatHead?.querySelector("[data-private-chat-picker]");
+                const recentMenu = chatHead?.querySelector("[data-recent-chat-menu]");
+                const recentMore = chatHead?.querySelector("[data-recent-chat-more]");
+                if (!picker) return;
+                if (recentMenu) {
+                    recentMenu.classList.remove("open");
+                }
+                if (recentMore) {
+                    recentMore.setAttribute("aria-expanded", "false");
+                }
+                const isOpen = picker.classList.toggle("open");
+                button.setAttribute("aria-expanded", String(isOpen));
+                if (isOpen) {
+                    picker.querySelector("select")?.focus();
+                }
+            });
+        });
+
+        document.addEventListener("click", (event) => {
+            document.querySelectorAll("[data-recent-chat-menu].open").forEach((menu) => {
+                if (menu.contains(event.target)) return;
+                const button = menu.closest(".chat-head")?.querySelector("[data-recent-chat-more]");
+                menu.classList.remove("open");
+                if (button) {
+                    button.setAttribute("aria-expanded", "false");
+                }
+            });
+            document.querySelectorAll("[data-private-chat-picker].open").forEach((picker) => {
+                if (picker.contains(event.target)) return;
+                const button = picker.closest(".chat-head")?.querySelector("[data-private-chat-toggle]");
+                picker.classList.remove("open");
+                if (button) {
+                    button.setAttribute("aria-expanded", "false");
+                }
+            });
+        });
+
         document.querySelectorAll(".post-tools form").forEach((form) => {
             form.addEventListener("submit", () => {
                 sessionStorage.setItem("orbixFeedScrollY", String(window.scrollY));
@@ -1925,6 +2336,40 @@
                 sessionStorage.removeItem("orbixFeedScrollY");
             }
         }
+
+        document.querySelectorAll("[data-media-input]").forEach((input) => {
+            input.addEventListener("change", () => {
+                const hint = input.closest(".media-upload")?.querySelector("[data-media-hint]");
+                if (!hint) return;
+                if (!input.files.length) {
+                    hint.textContent = "사진은 최대 20장, 3MB 초과 사진은 자동 압축됩니다.";
+                    hint.classList.remove("media-status");
+                    return;
+                }
+                hint.textContent = input.files.length === 1 ? input.files[0].name : `${input.files.length}개 파일 선택됨`;
+                hint.classList.add("media-status");
+            });
+        });
+
+        document.querySelectorAll("[data-post-url]").forEach((post) => {
+            const openPost = () => {
+                window.location.href = post.dataset.postUrl;
+            };
+
+            post.addEventListener("click", (event) => {
+                if (event.target.closest("a, button, form, input, textarea, select, label, video")) {
+                    return;
+                }
+                openPost();
+            });
+
+            post.addEventListener("keydown", (event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    openPost();
+                }
+            });
+        });
 
         document.querySelectorAll(".feed-share-button").forEach((button) => {
             button.addEventListener("click", async () => {
@@ -1968,6 +2413,11 @@
 
         if (window.location.hash === "#chat-message") {
             history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+        }
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("{% url 'service_worker' %}").catch(() => {});
+            });
         }
     </script>
 </body>

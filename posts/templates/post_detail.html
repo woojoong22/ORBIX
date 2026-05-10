@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ post.title }} · Orbix</title>
+    <meta name="theme-color" content="#0a1024">
+    <link rel="manifest" href="{% url 'webmanifest' %}">
+    <link rel="apple-touch-icon" href="{% static 'posts/orbix-logo.png' %}">
     <style>
         :root {
             --ink: #16181d;
@@ -91,6 +94,14 @@
             font-size: 14px;
         }
 
+        .back-button {
+            gap: 8px;
+        }
+
+        .topbar > a.button:not(.back-button) {
+            display: none;
+        }
+
         .button.primary {
             border-color: var(--accent);
             background: var(--accent);
@@ -126,6 +137,26 @@
             border: 1px solid var(--line);
             border-radius: 8px;
             background: #fff;
+        }
+
+        .back-block {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 46px;
+            margin: 0 0 14px;
+            padding: 0 18px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            font-weight: 900;
+            box-shadow: 0 8px 22px rgba(22, 24, 29, 0.08);
+        }
+
+        .back-block:hover {
+            border-color: #c2cad8;
+            background: #f9fbff;
         }
 
         .post-head {
@@ -266,6 +297,13 @@
             <img class="brand-logo" src="{% static 'posts/orbix-logo.png' %}?v=20260502b" alt="" aria-hidden="true">
             <span class="brand-wordmark">Orbix</span>
         </a>
+        {% if post.board %}
+            <a class="button back-button" href="/home/?board={{ post.board.slug }}">← 뒤로가기</a>
+        {% elif post.author %}
+            <a class="button back-button" href="{% url 'profile_feed' post.author.username %}">← 뒤로가기</a>
+        {% else %}
+            <a class="button back-button" href="{% url 'home' %}">← 뒤로가기</a>
+        {% endif %}
         {% if post.author %}
             <a class="button" href="{% url 'profile_feed' post.author.username %}">피드로</a>
         {% else %}
@@ -274,6 +312,14 @@
     </header>
 
     <main class="wrap">
+        {% if post.board %}
+            <a class="back-block" href="/home/?board={{ post.board.slug }}" data-back-link>← 뒤로</a>
+        {% elif post.author %}
+            <a class="back-block" href="{% url 'profile_feed' post.author.username %}" data-back-link>← 뒤로</a>
+        {% else %}
+            <a class="back-block" href="{% url 'home' %}" data-back-link>← 뒤로</a>
+        {% endif %}
+
         <article class="post">
             <header class="post-head">
                 <h1>{{ post.title }}</h1>
@@ -361,6 +407,16 @@
 
     <script>
         const shareButton = document.querySelector("#share-button");
+        const backButtons = document.querySelectorAll("[data-back-link], .back-button");
+
+        backButtons.forEach((backButton) => {
+            backButton.addEventListener("click", (event) => {
+                if (window.history.length > 1 && document.referrer) {
+                    event.preventDefault();
+                    window.history.back();
+                }
+            });
+        });
 
         if (shareButton) {
             shareButton.addEventListener("click", async () => {
@@ -374,5 +430,12 @@
             });
         }
     </script>
+<script>
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+            navigator.serviceWorker.register("{% url 'service_worker' %}").catch(() => {});
+        });
+    }
+</script>
 </body>
 </html>

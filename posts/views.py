@@ -1,16 +1,20 @@
 import json
+import mimetypes
 from io import BytesIO
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 from uuid import uuid4
 
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Count, Q
-from django.http import JsonResponse
+from django.core.paginator import Paginator
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 from django.views.decorators.http import require_GET, require_POST
@@ -26,7 +30,27 @@ MAX_POST_IMAGE_SIZE = 3 * 1024 * 1024
 MAX_POST_VIDEO_SIZE = 100 * 1024 * 1024
 ALLOWED_POST_IMAGE_TYPES = {'image/jpeg', 'image/png', 'image/gif', 'image/webp'}
 ALLOWED_POST_VIDEO_TYPES = {'video/mp4', 'video/webm', 'video/quicktime'}
+ALLOWED_POST_IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
+ALLOWED_POST_VIDEO_EXTENSIONS = {'.mp4', '.webm', '.mov'}
 OTHER_CATEGORY_NAME = '기타'
+
+
+def service_worker(request):
+    service_worker_path = settings.BASE_DIR / 'posts' / 'static' / 'posts' / 'service-worker.js'
+    response = HttpResponse(
+        service_worker_path.read_text(encoding='utf-8'),
+        content_type='application/javascript',
+    )
+    response['Service-Worker-Allowed'] = '/'
+    return response
+
+
+def webmanifest(request):
+    manifest_path = settings.BASE_DIR / 'posts' / 'static' / 'posts' / 'manifest.webmanifest'
+    return HttpResponse(
+        manifest_path.read_text(encoding='utf-8'),
+        content_type='application/manifest+json',
+    )
 
 
 DEFAULT_TAXONOMY = {
@@ -219,6 +243,157 @@ DEFAULT_TAXONOMY['인터넷문화'] = {
     '이슈/트렌드': ['화제의글', '바이럴', '챌린지', '온라인논쟁', '플랫폼소식'],
 }
 
+CURATED_TAXONOMY = {
+    '건강': {
+        '심리/마음': {
+            '감정/고민': ['고민', '불안', '스트레스', '번아웃', '우울감', '이별', '관계 고민'],
+            '정신건강': ['우울증', '조울증', 'ADHD', '상담', '수면', '명상'],
+        },
+        '건강관리': {
+            '몸관리': ['다이어트', '비만관리', '영양제', '탈모', '피부관리', '운동습관'],
+            '의료': ['의학', '한의학', '치과', '재활', '수의학', '건강검진'],
+        },
+    },
+    '공부/직업': {
+        '입시/시험': {
+            '수능': ['수능', '국어', '수학', '영어', '사회탐구', '과학탐구', '재수', '입시정보'],
+            '자격/공무원': ['공무원', '경찰', '소방', '임용고시', '자격증', '공인중개사', '회계사', '세무사'],
+        },
+        '대학/학문': {
+            '대학생활': ['대학', '대학생활', '동아리', '장학금', '졸업', '대학원'],
+            '학문': ['인문학', '사회과학', '자연과학', '공학', '수학', '통계학', '철학', '역사'],
+        },
+        '커리어': {
+            '취업': ['취업', '이직', '면접', '자기소개서', '포트폴리오', '채용정보'],
+            '직무': ['개발자', '디자이너', '마케팅', '영업', '기획', '회계', '프리랜서', '창업'],
+            '직장생활': ['연봉', '복지', '입사', '퇴사', '조직문화', '직장고민', '회사생활'],
+        },
+    },
+    '게임': {
+        '플랫폼': {
+            'PC게임': ['리그 오브 레전드', '발로란트', '배틀그라운드', '오버워치', '메이플스토리', '로스트아크'],
+            '콘솔게임': ['플레이스테이션', '닌텐도 스위치', 'Xbox', '젤다', '포켓몬', '몬스터헌터'],
+            '모바일게임': ['원신', '붕괴 스타레일', '쿠키런', '브롤스타즈', '모바일 RPG'],
+        },
+        '게임문화': {
+            'e스포츠': ['LCK', '프로게이머', '대회', '경기분석'],
+            '인디/보드': ['인디게임', '보드게임', 'TRPG', '체스', '마작'],
+        },
+    },
+    '스포츠': {
+        '구기': {
+            '축구': ['K리그', 'EPL', '축구전술', '국가대표'],
+            '야구': ['KBO', 'MLB', '야구분석', '프로야구'],
+            '농구/배구': ['NBA', 'KBL', '농구분석', 'V리그', '배구'],
+        },
+        '개인/레저': {
+            '운동': ['헬스', '러닝', '요가', '필라테스', '수영', '자전거'],
+            '격투/레저': ['UFC', '복싱', '골프', '낚시', '등산', '캠핑'],
+        },
+    },
+    '엔터테인먼트': {
+        '영상': {
+            '영화/드라마': ['영화', '드라마', 'OTT', '넷플릭스', '디즈니플러스'],
+            '예능/방송': ['예능', '방송', '유튜브', '스트리머', '팟캐스트'],
+        },
+        '음악/공연': {
+            '음악': ['KPOP', '힙합', '밴드', '인디음악', '플레이리스트'],
+            '공연': ['콘서트', '뮤지컬', '연극', '전시', '페스티벌'],
+        },
+    },
+    '테크': {
+        '소프트웨어': {
+            '개발': ['웹개발', '앱개발', '백엔드', '프론트엔드', 'DevOps', '오픈소스'],
+            'AI/데이터': ['생성형 AI', '머신러닝', '데이터분석', '자동화', '챗봇'],
+            '보안/인프라': ['개인정보', '해킹', 'VPN', '클라우드', '서버', '네트워크'],
+        },
+        '하드웨어': {
+            '기기': ['스마트폰', '노트북', '태블릿', '웨어러블', '카메라'],
+            '가전': ['PC견적', '모니터', '키보드', '마우스', '스마트홈'],
+        },
+    },
+    '생활/취미': {
+        '일상': {
+            '생활정보': ['청소', '정리수납', '가전', '가구', '집수리', '원룸생활'],
+            '쇼핑/거래': ['핫딜', '쿠폰', '중고거래', '직구', '명품', '구독서비스'],
+        },
+        '취미': {
+            '창작취미': ['그림', '사진', '글쓰기', '영상편집', '공예', '디자인'],
+            '수집/DIY': ['시계', '문구', 'LP', '피규어', '목공', '3D프린팅'],
+        },
+        '패션/뷰티': {
+            '패션': [
+                '데일리룩', '브랜드', '스트릿', '미니멀', '남성패션', '여성패션',
+                '아메카지', '꾸안꾸', '워크웨어', '시티보이', '고프코어',
+                '올드머니룩', '미니멀룩', '스트릿패션', '남친룩',
+            ],
+            '뷰티': ['스킨케어', '메이크업', '헤어', '향수', '네일'],
+        },
+        '음식': {
+            '맛집/외식': ['맛집', '식당', '카페', '디저트', '혼밥', '데이트맛집'],
+            '요리': ['한식', '양식', '레시피', '집밥', '자취요리', '식단'],
+        },
+    },
+    '교통/여행': {
+        '교통': {
+            '운전/교통': ['초보운전', '주차', '교통법규', '사고대처', '운전팁'],
+            '자동차': ['국산차', '수입차', '전기차', '중고차', '정비', '튜닝'],
+            '모빌리티': ['자전거', '킥보드', '오토바이', '대중교통', '카셰어링'],
+        },
+        '여행': {
+            '국내여행': ['서울근교', '강원', '제주', '부산', '전라', '충청'],
+            '해외여행': ['일본', '동남아', '유럽', '미주', '중국/대만'],
+            '여행준비': ['항공권', '숙소', '일정', '환전', '비자', '여행보험'],
+        },
+    },
+    '경제/비즈니스': {
+        '투자': {
+            '분석': ['기업분석', '재무제표', '실적', '주식', 'ETF', '배당주'],
+            '가상자산': ['비트코인', '이더리움', '알트코인', '블록체인', 'NFT'],
+            '부동산': ['아파트', '청약', '전세', '월세', '경매', '재개발'],
+        },
+        '비즈니스': {
+            '기업': ['대기업', '공기업', '스타트업', '중소기업', '브랜드', '산업분석'],
+            '창업/자영업': ['창업', '프랜차이즈', '카페창업', '배달창업', '무인매장'],
+        },
+    },
+    '사회/이슈': {
+        '뉴스': {
+            '정치/사회': ['정치', '정책', '사회이슈', '선거', '국제뉴스'],
+            '법/제도': ['생활법률', '노동법', '부동산법', '소비자권리', '민원'],
+        },
+        '지역': {
+            '수도권': ['서울', '인천', '경기', '강남', '홍대', '성수'],
+            '전국': ['부산', '대구', '광주', '대전', '울산', '제주'],
+        },
+    },
+    '창작/디자인': {
+        '창작': {
+            '글/그림': ['글쓰기', '웹소설', '그림', '일러스트', '만화'],
+            '사진/영상': ['사진', '영상편집', '촬영', '보정', '브이로그'],
+        },
+        '디자인': {
+            'UX/UI': ['UX', 'UI', '서비스디자인', '피그마', '디자인시스템'],
+            '브랜딩': ['로고', '브랜드', '편집디자인', '포트폴리오'],
+        },
+    },
+    '인물': {
+        '공인/크리에이터': {
+            '연예인': ['배우', '가수', '아이돌', '방송인'],
+            '크리에이터': ['유튜버', '스트리머', '인플루언서', '작가'],
+        },
+        '전문가': {
+            '비즈니스 인물': ['CEO', '창업자', '투자자', '전문가'],
+        },
+    },
+    OTHER_CATEGORY_NAME: {
+        OTHER_CATEGORY_NAME: [OTHER_CATEGORY_NAME],
+    },
+}
+
+DEFAULT_TAXONOMY = CURATED_TAXONOMY
+
+
 SAMPLE_POSTS = [
     {
         'title': '개인 피드와 주제 게시판이 함께 흐릅니다',
@@ -254,6 +429,76 @@ TOPIC_ICON_OVERRIDES = {
     '메이커/DIY': '🛠️',
     '쇼핑/거래': '🛒',
     '인터넷문화': '🌐',
+    '공부/직업': '🎓',
+    '게임': '🎮',
+    '엔터테인먼트': '🎬',
+    '테크': '💻',
+    '생활/취미': '🏠',
+    '교통/여행': '🧭',
+    '경제/비즈니스': '💹',
+    '사회/이슈': '📰',
+    '창작/디자인': '🎨',
+    '인물': '👤',
+    '심리/마음': '🧘',
+    '건강관리': '💪',
+    '감정/고민': '💭',
+    '정신건강': '🌙',
+    '몸관리': '🥗',
+    '의료': '🏥',
+    '입시/시험': '📚',
+    '대학/학문': '🎓',
+    '커리어': '💼',
+    '수능': '📝',
+    '자격/공무원': '🏅',
+    '대학생활': '🏫',
+    '학문': '🔎',
+    '취업': '🧑‍💼',
+    '직무': '🧩',
+    '직장생활': '🏢',
+    '플랫폼': '🎮',
+    '게임문화': '🏆',
+    'PC게임': '🖥️',
+    '콘솔게임': '🕹️',
+    '모바일게임': '📱',
+    '인디/보드': '🎲',
+    '구기': '⚽',
+    '개인/레저': '🏃',
+    '영상': '🎬',
+    '음악/공연': '🎵',
+    '영화/드라마': '🎞️',
+    '예능/방송': '📺',
+    '공연': '🎭',
+    '소프트웨어': '💻',
+    '하드웨어': '📱',
+    '개발': '⌘',
+    'AI/데이터': '✦',
+    '보안/인프라': '🔐',
+    '가전': '🔌',
+    '일상': '🏠',
+    '생활정보': '🧹',
+    '창작취미': '✍️',
+    '수집/DIY': '🧰',
+    '교통': '🚌',
+    '자동차': '🚗',
+    '모빌리티': '🛴',
+    '비즈니스': '🏢',
+    '분석': '📊',
+    '기업분석': '📊',
+    '주식': '📈',
+    '핫딜/쇼핑': '🛒',
+    '부동산': '🏙️',
+    '기업': '🏛️',
+    '창업/자영업': '🏪',
+    '정치/사회': '🗞️',
+    '지역': '📍',
+    '수도권': '🗼',
+    '전국': '🗺️',
+    '글/그림': '🖋️',
+    '사진/영상': '📷',
+    'UX/UI': '◈',
+    '브랜딩': '◆',
+    '공인/크리에이터': '🎥',
+    '전문가': '🧑‍💼',
     '스포츠': '⚽',
     '축구': '⚽',
     '야구': '⚾',
@@ -349,6 +594,8 @@ TOPIC_ICON_OVERRIDES = {
     '경제공부': '📚',
     '집/살림': '🏠',
     '패션/뷰티': '👗',
+    '패션': '👗',
+    '뷰티': '💄',
     '데일리룩': '👕',
     '스킨케어': '🧴',
     '메이크업': '💄',
@@ -727,6 +974,200 @@ def follow_state(request, username):
     return JsonResponse(get_follow_payload(request.user, target_user, 'ok', False))
 
 
+def get_feed_posts_for_user(user):
+    posts = Post.objects.select_related(
+        'author',
+        'author__profile',
+        'board',
+        'board__category',
+        'board__category__parent',
+        'board__category__parent__parent',
+    ).prefetch_related('media').annotate(
+        like_count=Count('likes', distinct=True),
+        comment_count=Count('comments', distinct=True),
+    ).order_by('-created_at')
+    if user.is_authenticated:
+        followed_user_ids = Subscription.objects.filter(
+            subscriber=user,
+        ).values('target_id')
+        return posts.filter(author_id__in=followed_user_ids)
+    return posts
+
+
+def paginate_posts(request, posts, per_page=20):
+    return Paginator(posts, per_page).get_page(request.GET.get('page'))
+
+
+def feed(request):
+    page_obj = paginate_posts(request, get_feed_posts_for_user(request.user))
+    return render(request, 'home.html', {
+        'posts': page_obj,
+        'page_obj': page_obj,
+        'profile': ensure_profile(request.user),
+        'category_tree': build_category_tree(),
+        'board_search_category': get_other_category(),
+        'board_count': TopicBoard.objects.count(),
+        'chat_messages': [],
+        'recent_chat_links': get_recent_chat_links(request.user),
+        'feed_filter': 'following' if request.user.is_authenticated else 'all',
+        'following_feed': request.user.is_authenticated,
+    })
+
+
+def profile(request, username):
+    profile_user = get_object_or_404(User, username=username)
+    profile_obj = ensure_profile(profile_user)
+    posts = Post.objects.select_related(
+        'board',
+        'board__category',
+        'board__category__parent',
+    ).prefetch_related('media').filter(author=profile_user).order_by('-created_at')
+    is_orbiting = (
+        request.user.is_authenticated and
+        request.user != profile_user and
+        Subscription.objects.filter(subscriber=request.user, target=profile_user).exists()
+    )
+    orbiters_count = profile_user.subscribers.count()
+    orbiting_count = profile_user.subscriptions.count()
+    return render(request, 'profile.html', {
+        'profile_user': profile_user,
+        'profile': profile_obj,
+        'feed_user': profile_user,
+        'feed_profile': profile_obj,
+        'is_orbiting': is_orbiting,
+        'is_subscribed': is_orbiting,
+        'orbiting_count': orbiting_count,
+        'orbiters_count': orbiters_count,
+        'subscriber_count': orbiters_count,
+        'following_count': orbiting_count,
+        'posts': posts,
+        'subscribers': User.objects.filter(subscriptions__target=profile_user).select_related('profile').order_by('username'),
+        'subscriber_sort': 'date_desc',
+        'category_tree': build_category_tree(),
+        'board_search_category': get_other_category(),
+        'board_count': TopicBoard.objects.count(),
+        'chat_messages': [],
+        'recent_chat_links': get_recent_chat_links(request.user),
+        'profiles': UserProfile.objects.select_related('user').order_by('-created_at')[:8],
+        'popular_boards': TopicBoard.objects.select_related('category').annotate(post_count=Count('posts')).order_by('-post_count', '-created_at')[:10],
+    })
+
+
+@login_required
+def profile_edit(request):
+    profile_obj = ensure_profile(request.user)
+    if request.method == 'POST':
+        profile_obj.display_name = request.POST.get('display_name', '').strip() or request.user.username
+        profile_obj.bio = request.POST.get('bio', '').strip()[:160]
+        photo = get_valid_profile_photo(request)
+        if photo:
+            profile_obj.photo = photo
+        profile_obj.save()
+        return redirect('profile', username=request.user.username)
+    return render(request, 'profile.html', {
+        'profile_user': request.user,
+        'profile': profile_obj,
+        'feed_user': request.user,
+        'feed_profile': profile_obj,
+        'is_editing': True,
+        'posts': Post.objects.filter(author=request.user).order_by('-created_at'),
+    })
+
+
+@login_required
+@require_POST
+def orbit_toggle(request, username):
+    target_user = get_object_or_404(User, username=username)
+    if request.user == target_user:
+        return JsonResponse({
+            'orbiting': False,
+            'orbiters_count': target_user.subscribers.count(),
+            'error': 'self_orbit_blocked',
+        }, status=400)
+    subscription = Subscription.objects.filter(
+        subscriber=request.user,
+        target=target_user,
+    ).first()
+    if subscription:
+        subscription.delete()
+        orbiting = False
+    else:
+        Subscription.objects.create(subscriber=request.user, target=target_user)
+        create_notification(
+            target_user,
+            request.user,
+            Notification.VERB_FOLLOW,
+            dedupe=True,
+        )
+        orbiting = True
+    return JsonResponse({
+        'orbiting': orbiting,
+        'orbiters_count': target_user.subscribers.count(),
+    })
+
+
+@login_required
+def notifications(request):
+    items = list(request.user.notifications.select_related('actor', 'post')[:50])
+    request.user.notifications.filter(is_read=False).update(is_read=True)
+    return render(request, 'notifications.html', {'notifications': items})
+
+
+def explore(request):
+    posts = Post.objects.select_related(
+        'author',
+        'author__profile',
+        'board',
+    ).prefetch_related('media').annotate(
+        like_count=Count('likes', distinct=True),
+        comment_count=Count('comments', distinct=True),
+    ).order_by('-like_count', '-comment_count', '-created_at')
+    page_obj = paginate_posts(request, posts)
+    return render(request, 'explore.html', {'posts': page_obj, 'page_obj': page_obj})
+
+
+@login_required
+@require_POST
+def post_like(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    like = PostLike.objects.filter(post=post, user=request.user).first()
+    if like:
+        like.delete()
+        liked = False
+    else:
+        PostLike.objects.create(post=post, user=request.user)
+        create_notification(
+            post.author,
+            request.user,
+            Notification.VERB_LIKE,
+            post=post,
+            dedupe=True,
+        )
+        liked = True
+    return JsonResponse({'liked': liked, 'count': post.likes.count()})
+
+
+@login_required
+@require_POST
+def post_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    content = request.POST.get('content', '').strip()
+    if not content:
+        return JsonResponse({'created': False, 'error': 'empty_comment'}, status=400)
+    comment = PostComment.objects.create(
+        post=post,
+        user=request.user,
+        content=content[:500],
+    )
+    create_notification(post.author, request.user, Notification.VERB_COMMENT, post=post)
+    return JsonResponse({
+        'created': True,
+        'id': comment.id,
+        'count': post.comments.count(),
+        'content': comment.content,
+    })
+
+
 def make_unique_slug(name):
     base = slugify(name, allow_unicode=True) or 'board'
     slug = base
@@ -839,11 +1280,133 @@ BOARD_CATEGORY_OVERRIDES = {
 }
 
 
-GENERIC_OVERRIDE_KEYWORDS = {'취업', '구직', '채용', '취준', '면접', '자소서', '이력서', '인턴'}
+BOARD_CATEGORY_RULES = (
+    (
+        ('경제/비즈니스', '투자', '가상자산'),
+        (
+            '비트코인', 'bitcoin', 'btc', '이더리움', 'ethereum', 'eth', '코인',
+            '가상자산', '암호화폐', '블록체인', '알트코인', '리플', 'xrp',
+            '솔라나', 'solana', '업비트', '빗썸', '바이낸스', 'nft', 'defi',
+        ),
+    ),
+    (
+        ('생활/취미', '일상', '쇼핑/거래'),
+        ('공동구매', '공구', '핫딜', '특가', '쿠폰', '할인', '중고', '당근', '직구'),
+    ),
+    (
+        ('생활/취미', '음식', '맛집/외식'),
+        ('맛집', '식당', '밥집', '맛집추천', '혼밥', '데이트맛집', '카페', '커피', '디저트'),
+    ),
+    (
+        ('생활/취미', '음식', '요리'),
+        ('레시피', '요리', '집밥', '자취요리', '밀프렙', '식단', '한식'),
+    ),
+)
+
+BOARD_CATEGORY_OVERRIDES = {
+    '취업': ('공부/직업', '커리어', '취업'),
+    '구직': ('공부/직업', '커리어', '취업'),
+    '채용': ('공부/직업', '커리어', '취업'),
+    '취준': ('공부/직업', '커리어', '취업'),
+    '취업준비': ('공부/직업', '커리어', '취업'),
+    '면접': ('공부/직업', '커리어', '취업'),
+    '자소서': ('공부/직업', '커리어', '취업'),
+    '이력서': ('공부/직업', '커리어', '취업'),
+    '연봉': ('공부/직업', '커리어', '직장생활'),
+    '복지': ('공부/직업', '커리어', '직장생활'),
+    '대기업': ('경제/비즈니스', '비즈니스', '기업'),
+    '공기업': ('경제/비즈니스', '비즈니스', '기업'),
+    '삼성전자': ('경제/비즈니스', '투자', '분석'),
+    '삼성물산': ('경제/비즈니스', '투자', '분석'),
+    '현대자동차': ('경제/비즈니스', '투자', '분석'),
+    '네이버': ('경제/비즈니스', '투자', '분석'),
+    '카카오': ('경제/비즈니스', '투자', '분석'),
+    '배틀그라운드': ('게임', '플랫폼', 'PC게임'),
+    '배그': ('게임', '플랫폼', 'PC게임'),
+    '리그 오브 레전드': ('게임', '플랫폼', 'PC게임'),
+    '롤': ('게임', '플랫폼', 'PC게임'),
+    '발로란트': ('게임', '플랫폼', 'PC게임'),
+    '오버워치': ('게임', '플랫폼', 'PC게임'),
+    '메이플스토리': ('게임', '플랫폼', 'PC게임'),
+    '메이플': ('게임', '플랫폼', 'PC게임'),
+    '로스트아크': ('게임', '플랫폼', 'PC게임'),
+    '로아': ('게임', '플랫폼', 'PC게임'),
+    '운전': ('교통/여행', '교통', '운전/교통'),
+    '교통': ('교통/여행', '교통', '운전/교통'),
+    '자동차': ('교통/여행', '교통', '자동차'),
+    '패션': ('생활/취미', '패션/뷰티', '패션'),
+    '아메카지': ('생활/취미', '패션/뷰티', '패션'),
+    '꾸안꾸': ('생활/취미', '패션/뷰티', '패션'),
+    '워크웨어': ('생활/취미', '패션/뷰티', '패션'),
+    '시티보이': ('생활/취미', '패션/뷰티', '패션'),
+    '고프코어': ('생활/취미', '패션/뷰티', '패션'),
+    '올드머니룩': ('생활/취미', '패션/뷰티', '패션'),
+    '미니멀룩': ('생활/취미', '패션/뷰티', '패션'),
+    '스트릿패션': ('생활/취미', '패션/뷰티', '패션'),
+    '남친룩': ('생활/취미', '패션/뷰티', '패션'),
+    '데일리룩': ('생활/취미', '패션/뷰티', '패션'),
+    '캠핑': ('스포츠', '개인/레저', '격투/레저'),
+    '헬스': ('스포츠', '개인/레저', '운동'),
+    '다이어트': ('건강', '건강관리', '몸관리'),
+    '수능': ('공부/직업', '입시/시험', '수능'),
+}
+
+GENERIC_OVERRIDE_KEYWORDS = {'취업', '구직', '채용', '취준', '면접', '자소서', '이력서', '연봉', '복지'}
+
+KNOWN_COMPANY_BOARD_NAMES = {
+    '삼성물산', '삼성전자', '현대자동차', '현대건설', '기아', 'sk하이닉스',
+    'lg전자', 'lg화학', '네이버', '카카오', '포스코', '롯데', 'cj', '한화',
+}
+COMPANY_SUFFIX_KEYWORDS = (
+    '전자', '물산', '건설', '화학', '생명', '증권', '은행', '보험', '제약',
+    '바이오', '중공업', '자동차', '모비스', '하이닉스', '에너지',
+)
+EMPLOYMENT_CONTEXT_KEYWORDS = (
+    '채용', '연봉', '복지', '면접', '입사', '퇴사', '이직', '자소서',
+    '공채', '신입', '경력', '취업', '직장', '회사생활', '조직문화',
+)
 
 
 def get_or_create_subcategory(major_name, subcategory_name):
     return get_or_create_category_path(major_name, subcategory_name)
+
+
+def normalize_lookup_text(value):
+    return ''.join(value.casefold().split())
+
+
+def contains_keyword(text, keywords):
+    normalized = text.casefold()
+    compact = normalize_lookup_text(text)
+    return any(keyword.casefold() in normalized or normalize_lookup_text(keyword) in compact for keyword in keywords)
+
+
+def is_company_board_name(board_name):
+    compact = normalize_lookup_text(board_name)
+    if compact in {normalize_lookup_text(name) for name in KNOWN_COMPANY_BOARD_NAMES}:
+        return True
+    if len(compact) < 3:
+        return False
+    return any(compact.endswith(normalize_lookup_text(keyword)) for keyword in COMPANY_SUFFIX_KEYWORDS)
+
+
+def get_company_analysis_category():
+    return get_valid_taxonomy_category('경제/비즈니스', '투자', '분석')
+
+
+def get_employment_context_category():
+    return get_valid_taxonomy_category('공부/직업', '커리어', '직장생활')
+
+
+def get_contextual_post_board(board, title, content):
+    if not board or not is_company_board_name(board.name):
+        return board
+    if not contains_keyword(f'{title} {content}', EMPLOYMENT_CONTEXT_KEYWORDS):
+        return board
+    employment_category = get_employment_context_category()
+    if not employment_category:
+        return board
+    return get_or_create_board(employment_category, board.name)
 
 
 def iter_taxonomy_options():
@@ -853,6 +1416,8 @@ def iter_taxonomy_options():
 def infer_board_category_from_presets(board_name):
     normalized = board_name.casefold().strip()
     compact = ''.join(normalized.split())
+    if is_company_board_name(board_name):
+        return get_company_analysis_category()
     override = BOARD_CATEGORY_OVERRIDES.get(normalized) or BOARD_CATEGORY_OVERRIDES.get(compact)
     if not override:
         for keyword, category_path in sorted(BOARD_CATEGORY_OVERRIDES.items(), key=lambda item: len(item[0]), reverse=True):
@@ -863,7 +1428,9 @@ def infer_board_category_from_presets(board_name):
                 override = category_path
                 break
     if override:
-        return get_valid_taxonomy_category(*override)
+        override_category = get_valid_taxonomy_category(*override)
+        if override_category:
+            return override_category
     best_match = None
     best_match_length = 0
     for category_path, presets in iter_taxonomy_options():
@@ -987,9 +1554,11 @@ def infer_board_category(board_name):
     if preset_category:
         return preset_category
     normalized = board_name.casefold()
-    for major_name, subcategory_name, keywords in BOARD_CATEGORY_RULES:
+    for category_path, keywords in BOARD_CATEGORY_RULES:
         if any(keyword.casefold() in normalized for keyword in keywords):
-            return get_or_create_subcategory(major_name, subcategory_name)
+            category = get_valid_taxonomy_category(*category_path)
+            if category:
+                return category
     return infer_board_category_with_ai(board_name)
 
 
@@ -1052,6 +1621,24 @@ def get_or_create_routed_board(fallback_category, board_name):
             existing_board.save(update_fields=['category'])
         return existing_board
     return get_or_create_board(category, board_name)
+
+
+def sync_known_board_routes():
+    exact_names = {name for name in BOARD_CATEGORY_OVERRIDES if is_meaningful_board_name(name)}
+    if not exact_names:
+        return
+    for board in TopicBoard.objects.select_related('category').filter(name__in=exact_names):
+        routed_category = infer_board_category_from_presets(board.name)
+        if not routed_category or board.category_id == routed_category.id:
+            continue
+        duplicate = TopicBoard.objects.filter(
+            category=routed_category,
+            name=board.name,
+        ).exclude(id=board.id).exists()
+        if duplicate:
+            continue
+        board.category = routed_category
+        board.save(update_fields=['category'])
 
 
 def get_other_category():
@@ -1118,9 +1705,10 @@ def build_category_tree():
 
 def get_topic_cards(topic_category):
     if not topic_category:
+        root_names = [name for name in DEFAULT_TAXONOMY if name != OTHER_CATEGORY_NAME]
         return [
             {'category': category, 'icon': get_topic_icon(category.name)}
-            for category in Category.objects.filter(parent__isnull=True).order_by('order', 'name')
+            for category in Category.objects.filter(parent__isnull=True, name__in=root_names).order_by('order', 'name')
         ]
     return [{'category': topic_category, 'icon': get_topic_icon(topic_category.name), 'active': True}]
 
@@ -1165,6 +1753,70 @@ def get_subtopic_items(topic_category, selected_board=None):
     return items
 
 
+FEATURED_ORBIT_PRESETS = (
+    {
+        'name': '주식',
+        'copy': '시황, 종목, 뉴스가 빠르게 도는 곳',
+        'category_path': ('경제/비즈니스', '투자', '분석'),
+        'board_name': '주식',
+        'tone': 'market',
+    },
+    {
+        'name': '기업분석',
+        'copy': '삼성물산 같은 기업 궤도의 중심',
+        'category_path': ('경제/비즈니스', '투자', '분석'),
+        'board_name': '기업분석',
+        'tone': 'business',
+    },
+    {
+        'name': '패션',
+        'copy': '착장, 브랜드, 트렌드가 계속 바뀌는 취향 궤도',
+        'category_path': ('생활/취미', '패션/뷰티', '패션'),
+        'board_name': '패션',
+        'tone': 'style',
+    },
+    {
+        'name': '핫딜/쇼핑',
+        'copy': '지금 살 만한 것들을 빠르게 모으는 곳',
+        'category_path': ('생활/취미', '일상', '쇼핑/거래'),
+        'board_name': '핫딜',
+        'tone': 'shopping',
+    },
+    {
+        'name': '스포츠',
+        'copy': '경기, 이적, 응원 반응이 살아있는 주제',
+        'category_path': ('스포츠',),
+        'tone': 'sports',
+    },
+    {
+        'name': '엔터',
+        'copy': '드라마, 음악, 방송 이슈를 따라가기 좋게',
+        'category_path': ('엔터테인먼트',),
+        'tone': 'media',
+    },
+    {
+        'name': '게임',
+        'copy': '패치, 대회, 공략이 계속 갱신되는 궤도',
+        'category_path': ('게임',),
+        'tone': 'game',
+    },
+)
+
+
+def get_featured_orbits():
+    featured = []
+    for item in FEATURED_ORBIT_PRESETS:
+        category = get_valid_taxonomy_category(*item['category_path'])
+        if not category:
+            continue
+        featured.append({
+            **item,
+            'category': category,
+            'icon': get_topic_icon(item['name']),
+        })
+    return featured
+
+
 def get_descendant_category_ids(category):
     ids = [category.id]
     pending = list(category.children.all())
@@ -1173,6 +1825,15 @@ def get_descendant_category_ids(category):
         ids.append(child.id)
         pending.extend(list(child.children.all()))
     return ids
+
+
+def get_current_taxonomy_board_filter():
+    root_names = [name for name in DEFAULT_TAXONOMY if name != OTHER_CATEGORY_NAME]
+    return (
+        Q(category__name__in=root_names, category__parent__isnull=True) |
+        Q(category__parent__name__in=root_names) |
+        Q(category__parent__parent__name__in=root_names)
+    )
 
 
 def get_selected_board(request):
@@ -1265,12 +1926,90 @@ def get_chat_context(request, selected_board=None, selected_category=None):
         )
         chat_title = '전체 채팅'
 
+    current_chat_key = None
+    if chat_scope == 'private' and private_user:
+        current_chat_key = f'private-{private_user.id}'
+    elif chat_scope == 'category' and selected_category:
+        current_chat_key = f'category-{selected_category.id}'
+    elif chat_scope == 'board' and selected_board:
+        current_chat_key = f'board-{selected_board.id}'
+
+    recent_chat_links = [
+        link
+        for link in get_recent_chat_links(request.user)
+        if link['key'] != current_chat_key
+    ]
+
     return {
         'chat_scope': chat_scope,
         'private_user': private_user,
         'chat_title': chat_title,
         'chat_messages': reversed(list(chat_messages.order_by('-created_at')[:30])),
+        'recent_chat_links': recent_chat_links,
     }
+
+
+def get_user_label(user):
+    profile = getattr(user, 'profile', None)
+    if profile:
+        return profile.display_name
+    return user.username
+
+
+def get_recent_chat_links(user):
+    if not user.is_authenticated:
+        return []
+
+    recent_messages = ChatMessage.objects.select_related(
+        'board',
+        'category',
+        'recipient',
+        'recipient__profile',
+        'user',
+        'user__profile',
+    ).filter(
+        Q(user=user) | Q(recipient=user),
+    ).order_by('-created_at')[:80]
+    links = []
+    seen = set()
+
+    for chat in recent_messages:
+        link = None
+        if chat.recipient_id:
+            other_user = chat.recipient if chat.user_id == user.id else chat.user
+            if not other_user:
+                continue
+            key = ('private', other_user.id)
+            link = {
+                'key': f'private-{other_user.id}',
+                'label': get_user_label(other_user),
+                'href': f'/home/?chat=private&private_user={other_user.id}',
+            }
+        elif chat.board_id and chat.board:
+            key = ('board', chat.board_id)
+            link = {
+                'key': f'board-{chat.board_id}',
+                'label': chat.board.name,
+                'href': f'/home/?board={chat.board.slug}',
+            }
+        elif chat.category_id and chat.category:
+            key = ('category', chat.category_id)
+            link = {
+                'key': f'category-{chat.category_id}',
+                'label': chat.category.name,
+                'href': f'/home/?category={chat.category_id}&chat=category',
+            }
+        else:
+            continue
+
+        if key in seen:
+            continue
+        seen.add(key)
+        links.append(link)
+        if len(links) >= 12:
+            break
+
+    return links
 
 
 def compress_image(uploaded_file):
@@ -1295,11 +2034,25 @@ def compress_image(uploaded_file):
     return ContentFile(buffer.getvalue(), name=filename)
 
 
+def get_uploaded_media_type(uploaded_file):
+    content_type = getattr(uploaded_file, 'content_type', '') or ''
+    filename = getattr(uploaded_file, 'name', '') or ''
+    guessed_type = mimetypes.guess_type(filename)[0] or ''
+    extension = f'.{filename.rsplit(".", 1)[-1].casefold()}' if '.' in filename else ''
+    media_type = content_type or guessed_type
+
+    if media_type in ALLOWED_POST_IMAGE_TYPES or extension in ALLOWED_POST_IMAGE_EXTENSIONS:
+        return PostMedia.MEDIA_IMAGE
+    if media_type in ALLOWED_POST_VIDEO_TYPES or extension in ALLOWED_POST_VIDEO_EXTENSIONS:
+        return PostMedia.MEDIA_VIDEO
+    return None
+
+
 def save_post_media(post, files):
     image_count = 0
     for uploaded_file in files:
-        content_type = getattr(uploaded_file, 'content_type', '')
-        if content_type in ALLOWED_POST_IMAGE_TYPES:
+        media_type = get_uploaded_media_type(uploaded_file)
+        if media_type == PostMedia.MEDIA_IMAGE:
             if image_count >= MAX_POST_IMAGE_COUNT:
                 continue
             image_count += 1
@@ -1311,7 +2064,7 @@ def save_post_media(post, files):
                 file=file_to_save,
                 media_type=PostMedia.MEDIA_IMAGE,
             )
-        elif content_type in ALLOWED_POST_VIDEO_TYPES and uploaded_file.size <= MAX_POST_VIDEO_SIZE:
+        elif media_type == PostMedia.MEDIA_VIDEO and uploaded_file.size <= MAX_POST_VIDEO_SIZE:
             PostMedia.objects.create(
                 post=post,
                 file=uploaded_file,
@@ -1321,6 +2074,7 @@ def save_post_media(post, files):
 
 def landing(request):
     ensure_default_taxonomy()
+    sync_known_board_routes()
     if request.method == 'POST':
         board_name = request.POST.get('board_name', '').strip()
         if board_name:
@@ -1332,6 +2086,7 @@ def landing(request):
 
 def home(request):
     ensure_default_taxonomy()
+    sync_known_board_routes()
     profile = ensure_profile(request.user)
     selected_board = get_selected_board(request)
     selected_category = None if selected_board else get_selected_category(request)
@@ -1339,6 +2094,7 @@ def home(request):
     chat_context = get_chat_context(request, selected_board, selected_category)
     feed_filter = request.GET.get('feed')
     following_feed = feed_filter == 'following'
+    search_query = request.GET.get('q', '').strip()
 
     def restore_feed_redirect():
         if selected_board:
@@ -1436,16 +2192,17 @@ def home(request):
         content = request.POST.get('content', '').strip()
         board_id = request.POST.get('board_id')
         board = TopicBoard.objects.filter(id=board_id).first()
+        post_board = get_contextual_post_board(board, title, content)
         if title and content:
             post = Post.objects.create(
                 title=title,
                 content=content,
-                board=board,
+                board=post_board,
                 author=request.user if request.user.is_authenticated else None,
             )
             save_post_media(post, request.FILES.getlist('media'))
-        if board:
-            return redirect(f'/home/?board={board.slug}')
+        if post_board:
+            return redirect(f'/home/?board={post_board.slug}')
         return redirect('home')
 
     posts = Post.objects.select_related(
@@ -1470,6 +2227,15 @@ def home(request):
             subscriber=request.user,
         ).values('target_id')
         posts = posts.filter(author_id__in=followed_user_ids)
+    if search_query:
+        posts = posts.filter(
+            Q(title__icontains=search_query) |
+            Q(content__icontains=search_query) |
+            Q(board__name__icontains=search_query) |
+            Q(board__category__name__icontains=search_query) |
+            Q(author__username__icontains=search_query) |
+            Q(author__profile__display_name__icontains=search_query)
+        )
 
     profiles = UserProfile.objects.select_related('user').annotate(
         post_count=Count('user__posts', distinct=True),
@@ -1485,6 +2251,8 @@ def home(request):
         'category',
         'category__parent',
         'category__parent__parent',
+    ).filter(
+        get_current_taxonomy_board_filter()
     ).annotate(
         post_count=Count('posts', distinct=True),
         chat_count=Count('chat_messages', distinct=True),
@@ -1500,6 +2268,29 @@ def home(request):
         like_count=Count('likes', distinct=True),
         comment_count=Count('comments', distinct=True),
     ).order_by('-like_count', '-comment_count', '-created_at')[:10]
+    search_boards = []
+    search_categories = []
+    search_profiles = []
+    if search_query:
+        search_boards = list(TopicBoard.objects.select_related(
+            'category',
+            'category__parent',
+            'category__parent__parent',
+        ).filter(
+            Q(name__icontains=search_query) |
+            Q(category__name__icontains=search_query) |
+            Q(category__parent__name__icontains=search_query) |
+            Q(category__parent__parent__name__icontains=search_query)
+        ).order_by('name')[:8])
+        search_categories = list(Category.objects.filter(
+            Q(name__icontains=search_query) |
+            Q(parent__name__icontains=search_query) |
+            Q(parent__parent__name__icontains=search_query)
+        ).select_related('parent', 'parent__parent').order_by('order', 'name')[:8])
+        search_profiles = list(UserProfile.objects.select_related('user').filter(
+            Q(display_name__icontains=search_query) |
+            Q(user__username__icontains=search_query)
+        ).order_by('display_name')[:8])
     liked_post_ids = set()
     followed_user_ids = set()
     if request.user.is_authenticated:
@@ -1513,12 +2304,13 @@ def home(request):
 
     return render(request, 'home.html', {
         'category_tree': build_category_tree(),
-        'board_search_category': get_other_category(),
+        'board_search_category': topic_category or get_other_category(),
         'posts': list(posts),
         'sample_posts': SAMPLE_POSTS if not posts.exists() else [],
         'selected_board': selected_board,
         'selected_category': selected_category,
         'topic_category': topic_category,
+        'featured_orbits': get_featured_orbits() if not topic_category and not search_query else [],
         'topic_cards': get_topic_cards(topic_category),
         'topic_back_category': get_topic_back_category(topic_category),
         'subtopic_items': get_subtopic_items(topic_category, selected_board),
@@ -1527,6 +2319,7 @@ def home(request):
         'chat_scope': chat_context['chat_scope'],
         'private_user': chat_context['private_user'],
         'chat_title': chat_context['chat_title'],
+        'recent_chat_links': chat_context['recent_chat_links'],
         'profiles': profiles,
         'profile': profile,
         'boards': boards,
@@ -1536,6 +2329,10 @@ def home(request):
         'followed_user_ids': followed_user_ids,
         'feed_filter': feed_filter,
         'following_feed': following_feed,
+        'search_query': search_query,
+        'search_boards': search_boards,
+        'search_categories': search_categories,
+        'search_profiles': search_profiles,
     })
 
 
@@ -1652,6 +2449,9 @@ def profile_feed(request, username):
     popular_boards = TopicBoard.objects.select_related(
         'category',
         'category__parent',
+        'category__parent__parent',
+    ).filter(
+        get_current_taxonomy_board_filter()
     ).annotate(
         post_count=Count('posts', distinct=True),
         chat_count=Count('chat_messages', distinct=True),
@@ -1673,6 +2473,7 @@ def profile_feed(request, username):
         'chat_scope': chat_context['chat_scope'],
         'private_user': chat_context['private_user'],
         'chat_title': chat_context['chat_title'],
+        'recent_chat_links': chat_context['recent_chat_links'],
         'profiles': profiles,
         'popular_boards': popular_boards,
     })
@@ -1765,20 +2566,21 @@ def create(request):
         board = TopicBoard.objects.filter(id=request.POST.get('board_id')).first()
         if not title or not content:
             return render(request, 'create.html', {'boards': TopicBoard.objects.all()})
-        post = Post.objects.create(title=title, content=content, board=board, author=request.user)
+        post_board = get_contextual_post_board(board, title, content)
+        post = Post.objects.create(title=title, content=content, board=post_board, author=request.user)
         save_post_media(post, request.FILES.getlist('media'))
-        if board:
-            return redirect(f'/home/?board={board.slug}')
+        if post_board:
+            return redirect(f'/home/?board={post_board.slug}')
         return redirect('home')
     return render(request, 'create.html', {'boards': TopicBoard.objects.all()})
 
 
 def signup(request):
+    form = UserCreationForm(request.POST or None)
     if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
-        password = request.POST.get('password', '')
-        if username and password:
-            user = User.objects.create_user(username=username, password=password)
-            UserProfile.objects.create(user=user, display_name=username)
-            return redirect('login')
-    return render(request, 'signup.html')
+        if form.is_valid():
+            user = form.save()
+            ensure_profile(user)
+            login(request, user)
+            return redirect('home')
+    return render(request, 'signup.html', {'form': form})

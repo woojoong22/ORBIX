@@ -3,9 +3,11 @@ __pycache__/
 *.sqlite3
 db.sqlite3
 .env
+.claude/
 .venv/
 venv/
 media/
+staticfiles/
 *.log
 .DS_Store
 Thumbs.db
