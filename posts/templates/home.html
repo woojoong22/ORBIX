@@ -30,6 +30,9 @@
             --shadow-soft: 0 8px 22px rgba(25, 31, 44, 0.06);
             --side-sticky-top: 184px;
             --content-grid-max: 1440px;
+            --mobile-board-height: 360px;
+            --mobile-feed-height: 620px;
+            --mobile-chat-height: 560px;
         }
 
         * { box-sizing: border-box; }
@@ -340,6 +343,10 @@
         }
 
         .panel { padding: 14px; margin-bottom: 14px; }
+
+        .mobile-layout-controls {
+            display: none;
+        }
 
         .topic-header {
             position: sticky;
@@ -1649,6 +1656,8 @@
         @media (max-width: 1120px) {
             .layout {
                 grid-template-columns: 1fr;
+                display: flex;
+                flex-direction: column;
                 height: auto;
                 min-height: 0;
                 overflow: visible;
@@ -1675,13 +1684,146 @@
 
             .nav-actions { overflow-x: auto; }
             .layout { grid-template-columns: 1fr; padding: 12px; }
-            .topic-header { padding: 12px 12px 0; }
+            .topic-header {
+                position: relative;
+                top: auto;
+                z-index: 1;
+                padding: 12px 12px 0;
+            }
+            .topic-shell {
+                max-height: var(--mobile-board-height);
+                overflow-y: auto;
+                overscroll-behavior: contain;
+                border-radius: 14px;
+            }
             .topic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .feed-column {
+                max-height: var(--mobile-feed-height);
+                overflow-y: auto;
+                overscroll-behavior: contain;
+                border-radius: 14px;
+                scroll-padding-top: 12px;
+            }
             .feed { grid-template-columns: 1fr; }
             .post-media { min-height: 220px; padding: 22px; }
             .summary-grid { grid-template-columns: 1fr; }
             .composer-actions { align-items: stretch; flex-direction: column; }
             .button.primary { width: 100%; }
+            .chat-box {
+                height: var(--mobile-chat-height);
+                grid-template-rows: auto minmax(0, 1fr) auto;
+            }
+            body.mobile-chat-first .chat { order: 1; }
+            body.mobile-chat-first .feed-column { order: 2; }
+            body.mobile-feed-first .feed-column { order: 1; }
+            body.mobile-feed-first .chat { order: 2; }
+
+            .mobile-layout-controls {
+                position: sticky;
+                top: 0;
+                z-index: 12;
+                display: grid;
+                gap: 10px;
+                margin: 10px 12px 0;
+                padding: 12px;
+                border: 1px solid rgba(148, 163, 184, 0.32);
+                border-radius: 16px;
+                background: rgba(255, 255, 255, 0.94);
+                box-shadow: 0 12px 30px rgba(25, 31, 44, 0.10);
+                backdrop-filter: blur(16px);
+            }
+
+            .mobile-layout-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+            }
+
+            .mobile-layout-title {
+                display: grid;
+                gap: 2px;
+                font-size: 13px;
+                color: var(--muted);
+            }
+
+            .mobile-layout-title strong {
+                color: var(--ink);
+                font-size: 15px;
+            }
+
+            .mobile-layout-toggle {
+                min-height: 34px;
+                padding: 0 10px;
+                border: 1px solid var(--line);
+                border-radius: 999px;
+                background: #fff;
+                color: var(--blue);
+                font: inherit;
+                font-weight: 900;
+                cursor: pointer;
+            }
+
+            .mobile-layout-body {
+                display: none;
+                gap: 12px;
+            }
+
+            .mobile-layout-controls.open .mobile-layout-body {
+                display: grid;
+            }
+
+            .mobile-layout-presets {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 6px;
+            }
+
+            .layout-preset {
+                min-height: 34px;
+                border: 1px solid var(--line);
+                border-radius: 999px;
+                background: #fff;
+                color: var(--ink);
+                font: inherit;
+                font-size: 12px;
+                font-weight: 900;
+                cursor: pointer;
+            }
+
+            .layout-preset.active {
+                border-color: transparent;
+                background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 60%, #d946ef 100%);
+                color: #fff;
+            }
+
+            .layout-slider {
+                display: grid;
+                gap: 6px;
+            }
+
+            .layout-slider span {
+                display: flex;
+                justify-content: space-between;
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 800;
+            }
+
+            .layout-slider strong {
+                color: var(--ink);
+            }
+
+            .layout-slider input {
+                width: 100%;
+                accent-color: var(--blue);
+            }
+
+            .layout-order {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
         }
     </style>
 </head>
@@ -1780,6 +1922,39 @@
                     <button class="board-search-button" type="submit" title="검색">⌕</button>
                 </form>
             </div>
+        </div>
+    </section>
+
+    <section class="mobile-layout-controls" data-mobile-layout-controls aria-label="모바일 화면 배치 조절">
+        <div class="mobile-layout-head">
+            <div class="mobile-layout-title">
+                <strong>화면 배치 조절</strong>
+                <span>게시판·피드·채팅 크기와 위치를 내 마음대로 맞춰요.</span>
+            </div>
+            <button class="mobile-layout-toggle" type="button" data-layout-panel-toggle aria-expanded="false">조절</button>
+        </div>
+        <div class="mobile-layout-body">
+            <div class="mobile-layout-presets" aria-label="빠른 배치">
+                <button class="layout-preset" type="button" data-layout-preset="balanced">균형</button>
+                <button class="layout-preset" type="button" data-layout-preset="feed">피드 크게</button>
+                <button class="layout-preset" type="button" data-layout-preset="chat">채팅 크게</button>
+            </div>
+            <div class="layout-order" aria-label="피드와 채팅 위치">
+                <button class="layout-preset" type="button" data-layout-order="feed-first">피드 먼저</button>
+                <button class="layout-preset" type="button" data-layout-order="chat-first">채팅 먼저</button>
+            </div>
+            <label class="layout-slider">
+                <span><strong>게시판</strong><output data-layout-output="board">360px</output></span>
+                <input type="range" min="180" max="560" step="20" value="360" data-layout-range="board">
+            </label>
+            <label class="layout-slider">
+                <span><strong>피드</strong><output data-layout-output="feed">620px</output></span>
+                <input type="range" min="320" max="900" step="20" value="620" data-layout-range="feed">
+            </label>
+            <label class="layout-slider">
+                <span><strong>채팅</strong><output data-layout-output="chat">560px</output></span>
+                <input type="range" min="280" max="820" step="20" value="560" data-layout-range="chat">
+            </label>
         </div>
     </section>
 
@@ -2161,6 +2336,101 @@
         const boardSearchForm = document.querySelector("#board-search-form");
         const boardRows = document.querySelectorAll("[data-board-name]");
         const topicHeader = document.querySelector(".topic-header");
+        const mobileLayoutDefaults = {
+            board: 360,
+            feed: 620,
+            chat: 560,
+            order: "feed-first",
+            preset: "balanced",
+        };
+        const mobileLayoutStorageKey = "orbixMobileLayout";
+
+        function readMobileLayout() {
+            try {
+                return { ...mobileLayoutDefaults, ...JSON.parse(localStorage.getItem(mobileLayoutStorageKey) || "{}") };
+            } catch (error) {
+                return { ...mobileLayoutDefaults };
+            }
+        }
+
+        function saveMobileLayout(layout) {
+            localStorage.setItem(mobileLayoutStorageKey, JSON.stringify(layout));
+        }
+
+        function applyMobileLayout(layout) {
+            const root = document.documentElement;
+            root.style.setProperty("--mobile-board-height", `${layout.board}px`);
+            root.style.setProperty("--mobile-feed-height", `${layout.feed}px`);
+            root.style.setProperty("--mobile-chat-height", `${layout.chat}px`);
+            document.body.classList.toggle("mobile-chat-first", layout.order === "chat-first");
+            document.body.classList.toggle("mobile-feed-first", layout.order !== "chat-first");
+
+            document.querySelectorAll("[data-layout-range]").forEach((input) => {
+                const key = input.dataset.layoutRange;
+                input.value = layout[key];
+            });
+            document.querySelectorAll("[data-layout-output]").forEach((output) => {
+                const key = output.dataset.layoutOutput;
+                output.textContent = `${layout[key]}px`;
+            });
+            document.querySelectorAll("[data-layout-preset]").forEach((button) => {
+                button.classList.toggle("active", button.dataset.layoutPreset === layout.preset);
+            });
+            document.querySelectorAll("[data-layout-order]").forEach((button) => {
+                button.classList.toggle("active", button.dataset.layoutOrder === layout.order);
+            });
+        }
+
+        let mobileLayout = readMobileLayout();
+        applyMobileLayout(mobileLayout);
+
+        document.querySelector("[data-layout-panel-toggle]")?.addEventListener("click", (event) => {
+            const controls = event.currentTarget.closest("[data-mobile-layout-controls]");
+            if (!controls) return;
+            const isOpen = controls.classList.toggle("open");
+            event.currentTarget.setAttribute("aria-expanded", String(isOpen));
+            event.currentTarget.textContent = isOpen ? "닫기" : "조절";
+        });
+
+        document.querySelectorAll("[data-layout-preset]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const presets = {
+                    balanced: { board: 320, feed: 560, chat: 520 },
+                    feed: { board: 220, feed: 820, chat: 360 },
+                    chat: { board: 220, feed: 420, chat: 780 },
+                };
+                mobileLayout = {
+                    ...mobileLayout,
+                    ...presets[button.dataset.layoutPreset],
+                    preset: button.dataset.layoutPreset,
+                };
+                applyMobileLayout(mobileLayout);
+                saveMobileLayout(mobileLayout);
+            });
+        });
+
+        document.querySelectorAll("[data-layout-order]").forEach((button) => {
+            button.addEventListener("click", () => {
+                mobileLayout = {
+                    ...mobileLayout,
+                    order: button.dataset.layoutOrder,
+                };
+                applyMobileLayout(mobileLayout);
+                saveMobileLayout(mobileLayout);
+            });
+        });
+
+        document.querySelectorAll("[data-layout-range]").forEach((input) => {
+            input.addEventListener("input", () => {
+                mobileLayout = {
+                    ...mobileLayout,
+                    [input.dataset.layoutRange]: Number(input.value),
+                    preset: "custom",
+                };
+                applyMobileLayout(mobileLayout);
+                saveMobileLayout(mobileLayout);
+            });
+        });
 
         function updateSideStickyTop() {
             if (!topicHeader) return;
