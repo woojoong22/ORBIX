@@ -1762,6 +1762,48 @@
             display: none;
         }
 
+        .topic-rail-wrap {
+            position: relative;
+            min-width: 0;
+        }
+
+        .topic-rail-wrap::after {
+            content: "";
+            position: absolute;
+            top: 8px;
+            right: 42px;
+            bottom: 8px;
+            width: 38px;
+            background: linear-gradient(90deg, rgba(245, 247, 255, 0), rgba(245, 247, 255, 0.96));
+            pointer-events: none;
+        }
+
+        .topic-next-button {
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            z-index: 2;
+            display: grid;
+            place-items: center;
+            width: 28px;
+            height: 28px;
+            border: 0;
+            border-radius: 999px;
+            background: #fff;
+            color: #635bff;
+            font-size: 18px;
+            font-weight: 900;
+            line-height: 1;
+            box-shadow: 0 8px 20px rgba(46, 55, 104, 0.14);
+            cursor: pointer;
+            transform: translateY(-50%);
+        }
+
+        .topic-next-button:hover {
+            background: linear-gradient(135deg, #6c63ff, #9f7aea);
+            color: #fff;
+        }
+
         .topic-card {
             grid-auto-flow: column;
             grid-auto-columns: auto;
@@ -2402,27 +2444,30 @@
     <section class="topic-header" aria-label="토픽 맵">
         <div class="topic-shell">
             <div class="topic-topline">
-                <div class="topic-grid">
-                    {% for topic in topic_cards %}
-                        {% cycle '128' '96' '72' '63' '58' '47' as topic_count silent %}
-                        <a class="topic-card {% if topic.active %}active{% endif %}" href="?category={{ topic.category.id }}" data-board-name="{{ topic.category.path_label }}">
-                            <span>{{ topic.category.name }}</span>
-                            <span class="topic-count">{{ topic_count }}</span>
-                        </a>
-                    {% endfor %}
-                    {% if topic_category %}
-                        {% if topic_back_category %}
-                            <a class="topic-card back" href="?category={{ topic_back_category.id }}">
-                                <span class="topic-icon" aria-hidden="true">←</span>
-                                <span>{{ topic_back_category.name }}</span>
+                <div class="topic-rail-wrap">
+                    <div class="topic-grid" data-topic-rail>
+                        {% for topic in topic_cards %}
+                            {% cycle '128' '96' '72' '63' '58' '47' as topic_count silent %}
+                            <a class="topic-card {% if topic.active %}active{% endif %}" href="?category={{ topic.category.id }}" data-board-name="{{ topic.category.path_label }}">
+                                <span>{{ topic.category.name }}</span>
+                                <span class="topic-count">{{ topic_count }}</span>
                             </a>
-                        {% else %}
-                            <a class="topic-card back" href="{% url 'home' %}">
-                                <span class="topic-icon" aria-hidden="true">←</span>
-                                <span>돌아가기</span>
-                            </a>
+                        {% endfor %}
+                        {% if topic_category %}
+                            {% if topic_back_category %}
+                                <a class="topic-card back" href="?category={{ topic_back_category.id }}">
+                                    <span class="topic-icon" aria-hidden="true">←</span>
+                                    <span>{{ topic_back_category.name }}</span>
+                                </a>
+                            {% else %}
+                                <a class="topic-card back" href="{% url 'home' %}">
+                                    <span class="topic-icon" aria-hidden="true">←</span>
+                                    <span>돌아가기</span>
+                                </a>
+                            {% endif %}
                         {% endif %}
-                    {% endif %}
+                    </div>
+                    <button class="topic-next-button" type="button" data-topic-next aria-label="다음 키워드 보기">›</button>
                 </div>
             </div>
             {% if topic_category %}
@@ -3033,6 +3078,16 @@
         if (boardSearch) {
             boardSearch.addEventListener("input", filterBoards);
         }
+
+        document.querySelectorAll("[data-topic-next]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const rail = button.closest(".topic-rail-wrap")?.querySelector("[data-topic-rail]");
+                if (!rail) return;
+                const amount = Math.max(rail.clientWidth * 0.72, 220);
+                const atEnd = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 8;
+                rail.scrollBy({ left: atEnd ? -rail.scrollWidth : amount, behavior: "smooth" });
+            });
+        });
 
         document.querySelectorAll("[data-focus-board-search]").forEach((button) => {
             button.addEventListener("click", () => {
