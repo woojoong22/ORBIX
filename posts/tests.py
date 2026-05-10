@@ -383,6 +383,13 @@ class FollowingFeedTests(TestCase):
         self.assertContains(response, 'mobile-chat-pane')
         self.assertIn('mobile_orbits', response.context)
 
+    def test_home_contains_desktop_chat_panel(self):
+        response = self.client.get(reverse('home'))
+
+        self.assertContains(response, 'desktop-chat-panel')
+        self.assertContains(response, 'data-chat-messages')
+        self.assertContains(response, 'data-private-chat-toggle')
+
 
 class RedesignedBackendCompatibilityTests(TestCase):
     def setUp(self):

@@ -414,6 +414,20 @@
     color: #fff;
   }
 
+  .desktop-chat-panel {
+    display: block;
+  }
+
+  .desktop-chat-panel .mobile-chat-card {
+    min-height: 560px;
+    max-height: calc(100vh - 48px);
+  }
+
+  .desktop-chat-panel .mobile-chat-messages {
+    min-height: 280px;
+    max-height: calc(100vh - 300px);
+  }
+
   @media (max-width: 760px) {
     .mobile-mode-tabs {
       position: sticky;
@@ -985,7 +999,7 @@
           {% endif %}
         </div>
 
-        <div class="mobile-chat-messages" id="messages">
+        <div class="mobile-chat-messages" id="messages" data-chat-messages>
           {% for chat in chat_messages %}
             <div class="mobile-message {{ chat.identity_mode }}">
               <span class="sender">
@@ -1031,6 +1045,88 @@
 {% endblock %}
 
 {% block sidebar_right %}
+  <div class="desktop-chat-panel" aria-label="데스크톱 실시간 채팅">
+    <div class="mobile-chat-card">
+      <div class="mobile-chat-head">
+        <div class="mobile-chat-title-row">
+          <span>{{ chat_title }}</span>
+          <span class="live"><span class="dot"></span>온라인</span>
+        </div>
+        <div class="mobile-chat-tabs">
+          <a class="mobile-chat-tab {% if chat_scope == 'global' %}active{% endif %}" href="{% url 'home' %}">전체</a>
+          {% if selected_category %}
+            <a class="mobile-chat-tab {% if chat_scope == 'category' %}active{% endif %}" href="?category={{ selected_category.id }}&chat=category">{{ selected_category.name }}</a>
+          {% elif selected_board %}
+            <a class="mobile-chat-tab {% if chat_scope == 'board' %}active{% endif %}" href="?board={{ selected_board.slug }}">{{ selected_board.name }}</a>
+          {% endif %}
+          {% if user.is_authenticated %}
+            <button class="mobile-chat-tab {% if private_user %}active{% endif %}" type="button" data-private-chat-toggle>개인</button>
+          {% endif %}
+        </div>
+        {% if recent_chat_links %}
+          <div class="recent-chat-strip">
+            {% for chat_link in recent_chat_links %}
+              <a class="mobile-chat-tab" href="{{ chat_link.href }}">{{ chat_link.label }}</a>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% if user.is_authenticated %}
+          <form class="mobile-private-picker" method="get" data-private-chat-picker>
+            <input type="hidden" name="chat" value="private">
+            <select name="private_user" aria-label="개인채팅 상대">
+              {% for person in profiles %}
+                {% if person.user != user %}
+                  <option value="{{ person.user.id }}" {% if private_user.id == person.user.id %}selected{% endif %}>{{ person.display_name }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+            <button class="btn btn-sm" type="submit">열기</button>
+          </form>
+        {% endif %}
+      </div>
+
+      <div class="mobile-chat-messages" data-chat-messages>
+        {% for chat in chat_messages %}
+          <div class="mobile-message {{ chat.identity_mode }}">
+            <span class="sender">
+              {% if chat.identity_mode == 'real' and chat.user %}
+                <a href="{% url 'profile_feed' chat.user.username %}">{{ chat.sender_name }}</a>
+              {% else %}
+                익명
+              {% endif %}
+              · {{ chat.created_at|date:"H:i" }}
+            </span>
+            {% if chat.message %}{{ chat.message }}{% endif %}
+            {% if chat.image %}<img src="{{ chat.image.url }}" alt="채팅 이미지">{% endif %}
+          </div>
+        {% empty %}
+          <div class="mobile-message">아직 채팅이 없습니다. 익명으로 가볍게 말하거나, 개인 피드 이름으로 참여할 수 있어요.</div>
+        {% endfor %}
+      </div>
+
+      <form class="mobile-chat-form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="send_chat">
+        <input type="hidden" name="chat_scope" value="{{ chat_scope }}">
+        {% if private_user %}
+          <input type="hidden" name="recipient_id" value="{{ private_user.id }}">
+        {% endif %}
+        <div class="chat-identity-toggle">
+          <label><input type="radio" name="identity_mode" value="anonymous" checked> 익명</label>
+          <label><input type="radio" name="identity_mode" value="real" {% if not user.is_authenticated %}disabled{% endif %}> 실명</label>
+        </div>
+        <div class="chat-row">
+          <input class="mobile-chat-input" data-chat-message type="text" name="message" autocomplete="off" placeholder="메시지">
+          <label class="chat-file-button" title="사진 첨부">
+            +
+            <input type="file" name="image" accept="image/jpeg,image/png,image/gif,image/webp">
+          </label>
+          <button class="chat-send" type="submit">›</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   {% if featured_orbits %}
     <div class="sidebar-card">
       <div class="sidebar-card-title">추천 궤도</div>
@@ -1093,7 +1189,7 @@
 
   document.querySelectorAll("[data-private-chat-toggle]").forEach((button) => {
     button.addEventListener("click", () => {
-      const picker = document.querySelector("[data-private-chat-picker]");
+      const picker = button.closest(".mobile-chat-card")?.querySelector("[data-private-chat-picker]");
       picker?.classList.toggle("open");
     });
   });
@@ -1138,17 +1234,15 @@
     });
   });
 
-  const messages = document.querySelector("#messages");
-  if (messages) {
+  document.querySelectorAll("[data-chat-messages]").forEach((messages) => {
     messages.scrollTop = messages.scrollHeight;
-  }
+  });
 
-  const chatForm = document.querySelector(".mobile-chat-form");
-  if (chatForm) {
+  document.querySelectorAll(".mobile-chat-form").forEach((chatForm) => {
     chatForm.addEventListener("submit", () => {
       sessionStorage.setItem(mobileModeStorageKey, "chat");
     });
-  }
+  });
 
 </script>
 {% endblock %}
