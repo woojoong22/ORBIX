@@ -2576,7 +2576,15 @@ def create(request):
 
 
 def signup(request):
-    form = UserCreationForm(request.POST or None)
+    signup_data = None
+    if request.method == 'POST':
+        signup_data = request.POST.copy()
+        legacy_password = signup_data.get('password', '').strip()
+        if legacy_password and not signup_data.get('password1') and not signup_data.get('password2'):
+            signup_data['password1'] = legacy_password
+            signup_data['password2'] = legacy_password
+
+    form = UserCreationForm(signup_data or None)
     if request.method == 'POST':
         if form.is_valid():
             user = form.save()

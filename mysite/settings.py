@@ -66,7 +66,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if os.environ.get('DJANGO_USE_WHITENOISE', 'False') == 'True':
+try:
+    import whitenoise  # noqa: F401
+except ImportError:
+    whitenoise = None
+
+if whitenoise is not None or os.environ.get('DJANGO_USE_WHITENOISE', 'False') == 'True':
     MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 ROOT_URLCONF = 'mysite.urls'

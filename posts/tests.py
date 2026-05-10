@@ -411,6 +411,15 @@ class RedesignedBackendCompatibilityTests(TestCase):
         self.assertContains(login, 'name="username"')
         self.assertContains(login, 'name="password"')
 
+    def test_signup_accepts_legacy_single_password_field(self):
+        response = self.client.post(reverse('signup'), {
+            'username': 'legacy_signup',
+            'password': 'legacy-pass-12345',
+        })
+
+        self.assertRedirects(response, reverse('home'))
+        self.assertTrue(User.objects.filter(username='legacy_signup').exists())
+
     def test_profile_view_exposes_orbit_context_names(self):
         Subscription.objects.create(subscriber=self.viewer, target=self.target)
         self.client.force_login(self.viewer)
