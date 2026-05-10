@@ -1817,6 +1817,35 @@ def get_featured_orbits():
     return featured
 
 
+def get_mobile_orbits(popular_boards, featured_orbits):
+    mobile_orbits = []
+    for board in popular_boards:
+        mobile_orbits.append({
+            'name': board.name,
+            'icon': get_topic_icon(board.name),
+            'href': f'?board={board.slug}',
+            'meta': f'글 {board.post_count} · 채팅 {board.chat_count}',
+            'score': board.post_count + board.chat_count,
+            'active': False,
+        })
+
+    if not mobile_orbits:
+        for orbit in featured_orbits:
+            category = orbit.get('category')
+            if not category:
+                continue
+            mobile_orbits.append({
+                'name': orbit['name'],
+                'icon': orbit['icon'],
+                'href': f'?category={category.id}',
+                'meta': '추천 궤도',
+                'score': 0,
+                'active': False,
+            })
+
+    return mobile_orbits[:12]
+
+
 def get_descendant_category_ids(category):
     ids = [category.id]
     pending = list(category.children.all())
@@ -2302,6 +2331,15 @@ def home(request):
             subscriber=request.user,
         ).values_list('target_id', flat=True))
 
+    featured_orbits = get_featured_orbits() if not topic_category and not search_query else []
+    mobile_orbits = get_mobile_orbits(popular_boards, featured_orbits)
+    if selected_board:
+        for orbit in mobile_orbits:
+            orbit['active'] = orbit['href'] == f'?board={selected_board.slug}'
+    elif selected_category:
+        for orbit in mobile_orbits:
+            orbit['active'] = orbit['href'] == f'?category={selected_category.id}'
+
     return render(request, 'home.html', {
         'category_tree': build_category_tree(),
         'board_search_category': topic_category or get_other_category(),
@@ -2310,7 +2348,8 @@ def home(request):
         'selected_board': selected_board,
         'selected_category': selected_category,
         'topic_category': topic_category,
-        'featured_orbits': get_featured_orbits() if not topic_category and not search_query else [],
+        'featured_orbits': featured_orbits,
+        'mobile_orbits': mobile_orbits,
         'topic_cards': get_topic_cards(topic_category),
         'topic_back_category': get_topic_back_category(topic_category),
         'subtopic_items': get_subtopic_items(topic_category, selected_board),
