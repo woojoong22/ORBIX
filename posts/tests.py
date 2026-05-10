@@ -401,6 +401,16 @@ class RedesignedBackendCompatibilityTests(TestCase):
 
         self.assertTrue(all(routes))
 
+    def test_auth_templates_use_django_form_field_names(self):
+        signup = self.client.get(reverse('signup'))
+        login = self.client.get(reverse('login'))
+
+        self.assertContains(signup, 'name="username"')
+        self.assertContains(signup, 'name="password1"')
+        self.assertContains(signup, 'name="password2"')
+        self.assertContains(login, 'name="username"')
+        self.assertContains(login, 'name="password"')
+
     def test_profile_view_exposes_orbit_context_names(self):
         Subscription.objects.create(subscriber=self.viewer, target=self.target)
         self.client.force_login(self.viewer)
