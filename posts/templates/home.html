@@ -10,14 +10,10 @@
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes heartPop { 0% { transform: scale(1); } 35% { transform: scale(1.45); } 70% { transform: scale(.92); } 100% { transform: scale(1); } }
 
-  :root {
-    --mobile-feed-ratio: 58%;
-  }
-
+  .mobile-mode-tabs,
+  .mobile-board-pane,
   .mobile-orbit-rail,
-  .mobile-split-toolbar,
-  .mobile-chat-pane,
-  .mobile-split-divider {
+  .mobile-chat-pane {
     display: none;
   }
 
@@ -43,7 +39,6 @@
   }
 
   .feed-tabs,
-  .mobile-layout-presets,
   .mobile-chat-tabs,
   .recent-chat-strip,
   .chat-identity-toggle,
@@ -63,7 +58,6 @@
 
   .feed-tab,
   .orbit-chip,
-  .mobile-preset,
   .mobile-chat-tab,
   .post-action-btn {
     border: 1px solid var(--border);
@@ -82,7 +76,6 @@
 
   .feed-tab.active,
   .orbit-chip.active,
-  .mobile-preset.active,
   .mobile-chat-tab.active {
     border-color: transparent;
     background: linear-gradient(135deg, var(--accent), var(--accent-2));
@@ -422,9 +415,119 @@
   }
 
   @media (max-width: 760px) {
+    .mobile-mode-tabs {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, .92);
+      box-shadow: 0 14px 34px rgba(15, 23, 42, .10);
+      backdrop-filter: blur(16px);
+    }
+
+    .mobile-mode-button {
+      min-height: 38px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .78);
+      color: var(--text-muted);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .mobile-mode-button.active {
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(79, 109, 255, .22);
+    }
+
+    .mobile-mode-content {
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .mobile-board-pane {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+      padding-bottom: 72px;
+    }
+
+    .mobile-board-card {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, .86);
+      box-shadow: 0 14px 34px rgba(15, 23, 42, .08);
+    }
+
+    .mobile-board-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--text-primary);
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .mobile-board-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .mobile-board-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .mobile-board-create {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+    }
+
+    .mobile-board-create input {
+      min-width: 0;
+      height: 42px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--text-primary);
+      font: inherit;
+      font-weight: 800;
+    }
+
     .mobile-orbit-rail {
-      display: block;
+      display: none;
       margin: -4px 0 2px;
+    }
+
+    .home-shell[data-mobile-mode="board"] .mobile-orbit-rail {
+      display: block;
     }
 
     .mobile-orbit-strip {
@@ -496,57 +599,10 @@
       justify-content: center;
     }
 
-    .mobile-split-toolbar {
-      display: grid;
-      gap: 9px;
-      padding: 10px;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      background: rgba(255, 255, 255, .86);
-      box-shadow: 0 14px 34px rgba(15, 23, 42, .10);
-    }
-
-    .mobile-split-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      color: var(--text-muted);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .mobile-split-title strong {
-      color: var(--text-primary);
-      font-size: 14px;
-    }
-
-    .mobile-layout-presets {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 6px;
-    }
-
-    .mobile-preset {
-      min-height: 34px;
-      padding: 0 8px;
-      font-size: 12px;
-    }
-
-    .mobile-split-grid {
-      display: grid;
-      grid-template-columns: minmax(0, var(--mobile-feed-ratio)) 14px minmax(0, 1fr);
-      align-items: stretch;
-      min-height: 560px;
-      height: calc(100vh - 250px);
-      max-height: 760px;
-    }
-
     .home-feed-pane,
     .mobile-chat-pane {
       min-width: 0;
       min-height: 0;
-      height: 100%;
       overflow-y: auto;
       overscroll-behavior: contain;
       padding-bottom: 72px;
@@ -558,28 +614,23 @@
     }
 
     .mobile-chat-pane {
-      display: block;
-      padding-left: 2px;
+      padding-left: 0;
+      flex-direction: column;
     }
 
-    .mobile-split-divider {
-      display: grid;
-      place-items: center;
-      width: 14px;
-      height: 100%;
-      border: 0;
-      background: transparent;
-      cursor: col-resize;
-      touch-action: none;
+    .home-shell[data-mobile-mode="board"] .mobile-board-pane,
+    .home-shell[data-mobile-mode="feed"] .home-feed-pane,
+    .home-shell[data-mobile-mode="chat"] .mobile-chat-pane {
+      display: flex;
     }
 
-    .mobile-split-divider::before {
-      content: "";
-      width: 4px;
-      height: 74px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, var(--accent), var(--accent-2));
-      box-shadow: 0 8px 18px rgba(79, 109, 255, .25);
+    .home-shell[data-mobile-mode="board"] .home-feed-pane,
+    .home-shell[data-mobile-mode="board"] .mobile-chat-pane,
+    .home-shell[data-mobile-mode="feed"] .mobile-board-pane,
+    .home-shell[data-mobile-mode="feed"] .mobile-chat-pane,
+    .home-shell[data-mobile-mode="chat"] .mobile-board-pane,
+    .home-shell[data-mobile-mode="chat"] .home-feed-pane {
+      display: none;
     }
 
     .feed-header {
@@ -638,7 +689,40 @@
 {% endblock %}
 
 {% block content %}
-<section class="home-shell" data-mobile-split-shell>
+<section class="home-shell" data-mobile-mode-shell data-mobile-mode="feed">
+  <nav class="mobile-mode-tabs" data-mobile-mode-tabs aria-label="모바일 화면 전환">
+    <button class="mobile-mode-button" type="button" data-mobile-mode-target="board">게시판</button>
+    <button class="mobile-mode-button active" type="button" data-mobile-mode-target="feed">피드</button>
+    <button class="mobile-mode-button" type="button" data-mobile-mode-target="chat">채팅</button>
+  </nav>
+  <section class="mobile-board-pane" data-mobile-mode-panel="board" aria-label="게시판">
+    <div class="mobile-board-card">
+      <div class="mobile-board-title">
+        <span>인기 게시판</span>
+        <span class="hint">자주 열리는 궤도</span>
+      </div>
+      <div class="mobile-board-grid">
+        {% for orbit in mobile_orbits %}
+          <a class="mobile-board-link {% if orbit.active %}active{% endif %}" href="{{ orbit.href }}">{{ orbit.icon }} {{ orbit.name }}</a>
+        {% empty %}
+          <span class="hint">아직 추천할 게시판이 없습니다.</span>
+        {% endfor %}
+      </div>
+    </div>
+    <form class="mobile-board-card" method="post">
+      {% csrf_token %}
+      <div class="mobile-board-title">
+        <span>새 궤도 생성</span>
+        <span class="hint">원하는 주제로 바로 만들기</span>
+      </div>
+      <div class="mobile-board-create">
+        <input type="hidden" name="action" value="create_board">
+        <input type="hidden" name="category_id" value="{{ board_search_category.id }}">
+        <input type="text" name="board_name" placeholder="만들고 싶은 궤도 이름" data-focus-board-search required>
+        <button class="btn btn-primary" type="submit">생성</button>
+      </div>
+    </form>
+  </section>
   <nav class="mobile-orbit-rail" aria-label="인기 궤도">
     <div class="mobile-orbit-strip">
       {% for orbit in mobile_orbits %}
@@ -667,19 +751,7 @@
     </div>
   </nav>
 
-  <div class="mobile-split-toolbar" aria-label="모바일 피드 채팅 화면 조절">
-    <div class="mobile-split-title">
-      <strong>통합 화면</strong>
-      <span data-split-label>피드 58 · 채팅 42</span>
-    </div>
-    <div class="mobile-layout-presets">
-      <button class="mobile-preset active" type="button" data-split-preset="58">균형</button>
-      <button class="mobile-preset" type="button" data-split-preset="65">피드 크게</button>
-      <button class="mobile-preset" type="button" data-split-preset="35">채팅 크게</button>
-    </div>
-  </div>
-
-  <div class="mobile-split-grid" data-mobile-split-grid>
+  <div class="mobile-mode-content">
     <section class="home-feed-pane" aria-label="피드">
       <div class="feed-header">
         <span class="feed-title">
@@ -873,8 +945,6 @@
       {% endfor %}
     </section>
 
-    <button class="mobile-split-divider" type="button" data-split-divider aria-label="피드와 채팅 폭 조절"></button>
-
     <aside class="mobile-chat-pane" aria-label="실시간 채팅">
       <div class="mobile-chat-card">
         <div class="mobile-chat-head">
@@ -993,49 +1063,33 @@
 
 {% block body_scripts %}
 <script>
-  const splitGrid = document.querySelector("[data-mobile-split-grid]");
-  const splitDivider = document.querySelector("[data-split-divider]");
-  const splitLabel = document.querySelector("[data-split-label]");
-  const splitStorageKey = "orbixMobileSplitLayout";
+  const mobileModeShell = document.querySelector("[data-mobile-mode-shell]");
+  const mobileModeStorageKey = "orbixMobileMode";
+  const validMobileModes = new Set(["board", "feed", "chat"]);
 
-  function setSplitRatio(ratio, persist = true) {
-    const safeRatio = Math.min(65, Math.max(35, Number(ratio) || 58));
-    document.documentElement.style.setProperty("--mobile-feed-ratio", `${safeRatio}%`);
-    if (splitLabel) {
-      splitLabel.textContent = `피드 ${safeRatio} · 채팅 ${100 - safeRatio}`;
+  function setMobileMode(mode, persist = true) {
+    const nextMode = validMobileModes.has(mode) ? mode : "feed";
+    if (mobileModeShell) {
+      mobileModeShell.dataset.mobileMode = nextMode;
     }
-    document.querySelectorAll("[data-split-preset]").forEach((button) => {
-      button.classList.toggle("active", Number(button.dataset.splitPreset) === safeRatio);
+    document.querySelectorAll("[data-mobile-mode-target]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.mobileModeTarget === nextMode);
     });
     if (persist) {
-      localStorage.setItem(splitStorageKey, String(safeRatio));
+      localStorage.setItem(mobileModeStorageKey, nextMode);
     }
   }
 
-  setSplitRatio(localStorage.getItem(splitStorageKey) || 58, false);
+  const mobileModeParams = new URLSearchParams(window.location.search);
+  const initialMobileMode = mobileModeParams.get("focus_chat") === "1"
+    ? "chat"
+    : (sessionStorage.getItem(mobileModeStorageKey) || localStorage.getItem(mobileModeStorageKey) || "feed");
+  setMobileMode(initialMobileMode, false);
+  sessionStorage.removeItem(mobileModeStorageKey);
 
-  document.querySelectorAll("[data-split-preset]").forEach((button) => {
-    button.addEventListener("click", () => setSplitRatio(button.dataset.splitPreset));
+  document.querySelectorAll("[data-mobile-mode-target]").forEach((button) => {
+    button.addEventListener("click", () => setMobileMode(button.dataset.mobileModeTarget));
   });
-
-  if (splitGrid && splitDivider) {
-    const updateFromPointer = (clientX) => {
-      const rect = splitGrid.getBoundingClientRect();
-      const ratio = ((clientX - rect.left) / rect.width) * 100;
-      setSplitRatio(ratio);
-    };
-
-    splitDivider.addEventListener("pointerdown", (event) => {
-      event.preventDefault();
-      splitDivider.setPointerCapture(event.pointerId);
-      updateFromPointer(event.clientX);
-    });
-
-    splitDivider.addEventListener("pointermove", (event) => {
-      if (!splitDivider.hasPointerCapture(event.pointerId)) return;
-      updateFromPointer(event.clientX);
-    });
-  }
 
   document.querySelectorAll("[data-private-chat-toggle]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -1092,13 +1146,9 @@
   const chatForm = document.querySelector(".mobile-chat-form");
   if (chatForm) {
     chatForm.addEventListener("submit", () => {
-      sessionStorage.setItem("orbixMobileSplitRatio", localStorage.getItem(splitStorageKey) || "58");
+      sessionStorage.setItem(mobileModeStorageKey, "chat");
     });
   }
 
-  if (sessionStorage.getItem("orbixMobileSplitRatio")) {
-    setSplitRatio(sessionStorage.getItem("orbixMobileSplitRatio"));
-    sessionStorage.removeItem("orbixMobileSplitRatio");
-  }
 </script>
 {% endblock %}

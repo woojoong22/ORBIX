@@ -370,12 +370,16 @@ class FollowingFeedTests(TestCase):
         self.assertEqual(links[0]['href'], f'/home/?chat=private&private_user={self.followed.id}')
         self.assertTrue(any(link['label'] == board.name and link['href'] == f'/home/?board={board.slug}' for link in links))
 
-    def test_home_contains_mobile_split_feed_chat_layout(self):
+    def test_home_contains_mobile_mode_tabs_for_board_feed_chat(self):
         response = self.client.get(reverse('home'))
 
-        self.assertContains(response, 'data-mobile-split-shell')
-        self.assertContains(response, 'data-split-divider')
-        self.assertContains(response, 'orbixMobileSplitLayout')
+        self.assertContains(response, 'data-mobile-mode-shell')
+        self.assertContains(response, 'data-mobile-mode-tabs')
+        self.assertContains(response, 'data-mobile-mode-target="board"')
+        self.assertContains(response, 'data-mobile-mode-target="feed"')
+        self.assertContains(response, 'data-mobile-mode-target="chat"')
+        self.assertContains(response, 'orbixMobileMode')
+        self.assertContains(response, 'mobile-board-pane')
         self.assertContains(response, 'mobile-chat-pane')
         self.assertIn('mobile_orbits', response.context)
 
