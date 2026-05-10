@@ -1803,6 +1803,10 @@
             padding: 0;
         }
 
+        body:not(.show-board-search) .board-search-panel {
+            display: none;
+        }
+
         .board-search-panel > div {
             display: grid;
             align-content: center;
@@ -1835,13 +1839,98 @@
             padding: 0 0 28px;
         }
 
-        .left-rail .summary-grid {
+        .left-rail {
             position: sticky;
             top: 24px;
+            display: grid;
+            gap: 12px;
             min-height: 0;
             max-height: calc(100vh - 48px);
-            gap: 12px;
             overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .left-rail .summary-grid {
+            position: static;
+            top: auto;
+            min-height: 0;
+            max-height: none;
+            gap: 12px;
+            overflow: visible;
+            padding-right: 0;
+        }
+
+        .side-menu-panel {
+            display: grid;
+            gap: 12px;
+            padding: 14px;
+            border: 1px solid rgba(124, 92, 255, 0.16);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 16px 42px rgba(46, 55, 104, 0.08);
+        }
+
+        .side-menu-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 900;
+        }
+
+        .side-help {
+            display: grid;
+            place-items: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            background: #f2efff;
+            color: #6c63ff;
+            font-size: 12px;
+        }
+
+        .side-nav {
+            display: grid;
+            gap: 6px;
+        }
+
+        .side-nav a,
+        .side-nav span {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            min-height: 36px;
+            padding: 0 10px;
+            border-radius: 10px;
+            color: #344054;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .side-nav a.active,
+        .side-nav a:hover {
+            background: linear-gradient(90deg, rgba(108, 99, 255, 0.12), rgba(108, 99, 255, 0.04));
+            color: #5b50ff;
+        }
+
+        .side-notice {
+            margin-left: auto;
+            min-width: 18px;
+            height: 18px;
+            display: inline-grid;
+            place-items: center;
+            border-radius: 999px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 10px;
+        }
+
+        .side-create-button {
+            width: 100%;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #635bff, #7c3aed);
+            color: #fff;
         }
 
         .summary-panel,
@@ -1882,8 +1971,30 @@
             padding: 16px;
         }
 
+        .search-results[aria-label="오늘 뜨는 궤도"] strong {
+            font-size: 18px;
+        }
+
         .search-results[aria-label="오늘 뜨는 궤도"] strong::before {
             content: "🔥 ";
+        }
+
+        .feed-section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 4px 0 8px;
+            color: #101828;
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .feed-section-title .button {
+            min-height: 30px;
+            padding: 0 10px;
+            border-radius: 999px;
+            font-size: 12px;
         }
 
         .composer {
@@ -2158,6 +2269,24 @@
 
     <main class="layout">
         <aside class="left-rail" aria-label="인기 목록">
+            <section class="side-menu-panel" aria-label="관심사 메뉴">
+                <div class="side-menu-title">
+                    <span>관심사 키워드</span>
+                    <span class="side-help">?</span>
+                </div>
+                <nav class="side-nav" aria-label="주요 메뉴">
+                    <a class="active" href="{% url 'home' %}">⌂ 홈</a>
+                    <a href="{% url 'home' %}?filter=explore">⌕ 탐색</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'profile_feed' user.username %}">☷ 내 커뮤니티</a>
+                    {% else %}
+                        <a href="{% url 'login' %}">☷ 내 커뮤니티</a>
+                    {% endif %}
+                    <span>♧ 알림 <span class="side-notice">3</span></span>
+                    <span>▱ 북마크</span>
+                </nav>
+                <button class="button primary side-create-button" type="button" data-focus-board-search>+ 주제 만들기</button>
+            </section>
             <div class="summary-grid" aria-label="인기 요약">
                 <section class="summary-panel">
                     <h2 class="section-title">관심사 키워드</h2>
@@ -2231,8 +2360,8 @@
                         <h1>{{ selected_category.name }}</h1>
                         <p>{{ selected_category.path_label }} 전체 게시글</p>
                     {% else %}
-                        <h1>전체 피드</h1>
-                        <p>주제 게시판 글과 사람들의 개인 피드가 함께 흐릅니다.</p>
+                        <h1>실시간 반응이 뜨거운 게시글</h1>
+                        <p>여러 관심사에서 가장 활발한 소통되는 글을 모았어요.</p>
                     {% endif %}
                 </div>
                 {% if search_query or selected_board or selected_category %}
@@ -2283,6 +2412,13 @@
                         {% endfor %}
                     </div>
                 </section>
+            {% endif %}
+
+            {% if not search_query and not selected_board and not selected_category %}
+                <div class="feed-section-title">
+                    <span>관심사별 피드</span>
+                    <a class="button" href="{% url 'home' %}">최신순</a>
+                </div>
             {% endif %}
 
             {% if not search_query %}
@@ -2612,6 +2748,7 @@
 
         document.querySelectorAll("[data-focus-board-search]").forEach((button) => {
             button.addEventListener("click", () => {
+                document.body.classList.add("show-board-search");
                 boardSearch?.scrollIntoView({ behavior: "smooth", block: "center" });
                 boardSearch?.focus();
             });
