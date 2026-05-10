@@ -1646,45 +1646,11 @@
             pointer-events: none;
         }
 
-        .concept-callout,
         .connection-flow {
             border: 1px solid rgba(124, 92, 255, 0.36);
             background: rgba(255, 255, 255, 0.86);
             box-shadow: 0 18px 44px rgba(94, 87, 255, 0.10);
             backdrop-filter: blur(16px);
-        }
-
-        .concept-callout {
-            position: fixed;
-            z-index: 2;
-            width: 178px;
-            padding: 14px;
-            border-radius: 14px;
-            color: #344054;
-            font-size: 12px;
-            line-height: 1.55;
-        }
-
-        .concept-callout strong {
-            display: block;
-            margin-bottom: 6px;
-            color: #5b50ff;
-            font-size: 13px;
-        }
-
-        .concept-callout.left-top {
-            left: max(12px, calc((100vw - 1180px) / 2 - 190px));
-            top: 110px;
-        }
-
-        .concept-callout.left-bottom {
-            left: max(12px, calc((100vw - 1180px) / 2 - 190px));
-            bottom: 132px;
-        }
-
-        .concept-callout.right-mid {
-            right: max(12px, calc((100vw - 1180px) / 2 - 190px));
-            top: 316px;
         }
 
         .topbar {
@@ -2050,7 +2016,6 @@
         }
 
         @media (max-width: 1120px) {
-            .concept-callout,
             .connection-flow {
                 display: none;
             }
@@ -2094,18 +2059,6 @@
     </style>
 </head>
 <body>
-    <aside class="concept-callout left-top">
-        <strong>혼합된 관심사 키워드</strong>
-        다양한 관심사 키워드를 실시간으로 확인하고 인기순으로 탐색할 수 있습니다.
-    </aside>
-    <aside class="concept-callout left-bottom">
-        <strong>다양한 커뮤니티</strong>
-        서로 다른 관심사 기반의 커뮤니티가 동시에 운영되며, 사용자가 직접 새 주제를 만들 수 있습니다.
-    </aside>
-    <aside class="concept-callout right-mid">
-        <strong>실시간 대화가 연결</strong>
-        게시글을 선택하면 해당 관심사에 대한 실시간 대화방이 열려 바로 소통할 수 있습니다.
-    </aside>
     <header class="topbar">
         <a class="brand" href="{% url 'home' %}" aria-label="Orbix home">
             <img class="brand-logo" src="{% static 'posts/orbix-logo.png' %}?v=20260502b" alt="" aria-hidden="true">
@@ -2207,7 +2160,7 @@
         <aside class="left-rail" aria-label="인기 목록">
             <div class="summary-grid" aria-label="인기 요약">
                 <section class="summary-panel">
-                    <h2 class="section-title">Popular Posts Top 10</h2>
+                    <h2 class="section-title">관심사 키워드</h2>
                     <div class="compact-list">
                         {% for post in popular_posts %}
                             <a class="compact-row" href="{% url 'post_detail' post.id %}">
@@ -2223,24 +2176,42 @@
                             </a>
                         {% empty %}
                             <div class="compact-row">
-                                아직 표시할 게시글이 없습니다.
-                                <span>게시글 반응이 생기면 여기에 나타납니다.</span>
+                                아직 반응이 쌓인 키워드가 없습니다.
+                                <span>좋아요와 댓글이 생기면 인기순으로 나타납니다.</span>
                             </div>
                         {% endfor %}
                     </div>
                 </section>
                 <section class="summary-panel">
-                    <h2 class="section-title">Popular Boards Top 10</h2>
+                    <h2 class="section-title">인기 커뮤니티 TOP 5</h2>
                     <div class="compact-list">
                         {% for board in popular_boards %}
+                            {% if forloop.counter <= 5 %}
                             <a class="compact-row" href="?board={{ board.slug }}" data-board-name="{{ board.path_label }}">
                                 {{ board.name }}
                                 <span>{{ board.category.path_label }} · 글 {{ board.post_count }} · 채팅 {{ board.chat_count }}</span>
                             </a>
+                            {% endif %}
                         {% empty %}
                             <div class="compact-row">
                                 아직 생성된 게시판이 없습니다.
                                 <span>대분류를 열어 첫 공간을 만들어보세요.</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                <section class="summary-panel">
+                    <h2 class="section-title">최근 생성된 커뮤니티</h2>
+                    <div class="compact-list">
+                        {% for board in boards|slice:":5" %}
+                            <a class="compact-row" href="?board={{ board.slug }}" data-board-name="{{ board.path_label }}">
+                                {{ board.name }}
+                                <span>{{ board.category.path_label }} · 바로 참여하기</span>
+                            </a>
+                        {% empty %}
+                            <div class="compact-row">
+                                새 커뮤니티를 기다리고 있어요.
+                                <span>위 검색창에서 관심사를 입력해 첫 공간을 만들어보세요.</span>
                             </div>
                         {% endfor %}
                     </div>
