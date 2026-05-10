@@ -370,24 +370,20 @@ class FollowingFeedTests(TestCase):
         self.assertEqual(links[0]['href'], f'/home/?chat=private&private_user={self.followed.id}')
         self.assertTrue(any(link['label'] == board.name and link['href'] == f'/home/?board={board.slug}' for link in links))
 
-    def test_home_contains_mobile_mode_tabs_for_board_feed_chat(self):
+    def test_home_contains_classic_integrated_layout(self):
         response = self.client.get(reverse('home'))
 
-        self.assertContains(response, 'data-mobile-mode-shell')
-        self.assertContains(response, 'data-mobile-mode-tabs')
-        self.assertContains(response, 'data-mobile-mode-target="board"')
-        self.assertContains(response, 'data-mobile-mode-target="feed"')
-        self.assertContains(response, 'data-mobile-mode-target="chat"')
-        self.assertContains(response, 'orbixMobileMode')
-        self.assertContains(response, 'mobile-board-pane')
-        self.assertContains(response, 'mobile-chat-pane')
+        self.assertContains(response, 'class="topbar"')
+        self.assertContains(response, 'class="topic-header"')
+        self.assertContains(response, 'class="feed-column"')
+        self.assertContains(response, 'class="chat"')
         self.assertIn('mobile_orbits', response.context)
 
-    def test_home_contains_desktop_chat_panel(self):
+    def test_home_contains_classic_chat_panel(self):
         response = self.client.get(reverse('home'))
 
-        self.assertContains(response, 'desktop-chat-panel')
-        self.assertContains(response, 'data-chat-messages')
+        self.assertContains(response, 'class="chat-box"')
+        self.assertContains(response, 'id="messages"')
         self.assertContains(response, 'data-private-chat-toggle')
 
 

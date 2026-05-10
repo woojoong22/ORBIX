@@ -1,1248 +1,2425 @@
-{% extends "base.html" %}
+﻿<!DOCTYPE html>
 {% load static %}
-
-{% block title %}홈 · ORBIX{% endblock %}
-{% block nav_home %}active{% endblock %}
-{% block bnav_home %}active{% endblock %}
-
-{% block head_extra %}
-<style>
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes heartPop { 0% { transform: scale(1); } 35% { transform: scale(1.45); } 70% { transform: scale(.92); } 100% { transform: scale(1); } }
-
-  .mobile-mode-tabs,
-  .mobile-board-pane,
-  .mobile-orbit-rail,
-  .mobile-chat-pane {
-    display: none;
-  }
-
-  .home-shell,
-  .home-feed-pane {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    min-width: 0;
-  }
-
-  .feed-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    animation: fadeIn .3s ease;
-  }
-
-  .feed-title {
-    font-size: 24px;
-    font-weight: 900;
-  }
-
-  .feed-tabs,
-  .mobile-chat-tabs,
-  .recent-chat-strip,
-  .chat-identity-toggle,
-  .chat-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .feed-tabs {
-    flex-wrap: wrap;
-    padding: 6px;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    background: rgba(255, 255, 255, .72);
-  }
-
-  .feed-tab,
-  .orbit-chip,
-  .mobile-chat-tab,
-  .post-action-btn {
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, .78);
-    color: var(--text-muted);
-    font: inherit;
-    font-size: 13px;
-    font-weight: 800;
-    cursor: pointer;
-  }
-
-  .feed-tab {
-    padding: 8px 14px;
-  }
-
-  .feed-tab.active,
-  .orbit-chip.active,
-  .mobile-chat-tab.active {
-    border-color: transparent;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    color: #fff;
-    box-shadow: 0 10px 24px rgba(79, 109, 255, .2);
-  }
-
-  .compose-card {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    padding: 14px;
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    background: rgba(255, 255, 255, .82);
-    box-shadow: 0 16px 40px rgba(15, 23, 42, .08);
-  }
-
-  .compose-card input,
-  .compose-card textarea {
-    width: 100%;
-    border: 0;
-    outline: 0;
-    background: transparent;
-    color: var(--text-primary);
-    font: inherit;
-  }
-
-  .compose-card input {
-    height: 36px;
-    font-weight: 900;
-  }
-
-  .compose-card textarea {
-    min-height: 74px;
-    resize: vertical;
-  }
-
-  .compose-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
-  }
-
-  .media-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 34px;
-    padding: 0 11px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: #fff;
-    color: var(--text-primary);
-    font-size: 13px;
-    font-weight: 800;
-    cursor: pointer;
-  }
-
-  .media-pill input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .hint {
-    color: var(--text-muted);
-    font-size: 12px;
-  }
-
-  .featured-orbits {
-    display: grid;
-    gap: 10px;
-    padding: 14px;
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    background: rgba(255, 255, 255, .78);
-  }
-
-  .featured-row,
-  .search-result-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .search-chip {
-    display: inline-flex;
-    align-items: center;
-    min-height: 34px;
-    padding: 0 12px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: #fff;
-    color: var(--text-primary);
-    font-size: 13px;
-    font-weight: 800;
-  }
-
-  .post-card {
-    animation: fadeIn .3s ease;
-    cursor: pointer;
-  }
-
-  .post-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 24px 50px rgba(15, 23, 42, .12);
-  }
-
-  .board-tag {
-    display: inline-flex;
-    align-items: center;
-    margin-top: 4px;
-    padding: 3px 9px;
-    border-radius: 999px;
-    background: var(--soft);
-    color: var(--accent);
-    font-size: 11px;
-    font-weight: 800;
-  }
-
-  .post-time {
-    color: var(--text-muted);
-    font-size: 12px;
-  }
-
-  .post-action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    min-height: 34px;
-    padding: 0 11px;
-  }
-
-  .post-action-btn.liked {
-    border-color: #fecdd3;
-    background: #fff1f2;
-    color: #e5484d;
-  }
-
-  .post-action-btn.liked .heart-icon {
-    animation: heartPop .35s ease;
-  }
-
-  .empty-state {
-    text-align: center;
-  }
-
-  .empty-icon {
-    margin-bottom: 12px;
-    font-size: 34px;
-  }
-
-  .mobile-chat-card {
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
-    height: 100%;
-    min-height: 0;
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    background: rgba(255, 255, 255, .88);
-    box-shadow: 0 16px 40px rgba(15, 23, 42, .08);
-    overflow: hidden;
-  }
-
-  .mobile-chat-head {
-    display: grid;
-    gap: 10px;
-    padding: 12px;
-    border-bottom: 1px solid var(--border);
-    background: linear-gradient(135deg, rgba(79, 109, 255, .08), rgba(180, 68, 255, .08));
-  }
-
-  .mobile-chat-title-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 900;
-  }
-
-  .live {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: #079455;
-    font-size: 11px;
-  }
-
-  .live .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: #12b76a;
-  }
-
-  .mobile-chat-tabs,
-  .recent-chat-strip {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .mobile-chat-tabs::-webkit-scrollbar,
-  .recent-chat-strip::-webkit-scrollbar {
-    display: none;
-  }
-
-  .mobile-chat-tab {
-    flex: 0 0 auto;
-    min-height: 30px;
-    padding: 0 10px;
-    text-align: center;
-    white-space: nowrap;
-  }
-
-  .mobile-private-picker {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 6px;
-  }
-
-  .mobile-private-picker:not(.open) {
-    display: none;
-  }
-
-  .mobile-private-picker select,
-  .mobile-chat-input {
-    min-width: 0;
-    height: 36px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: #fff;
-    color: var(--text-primary);
-    font: inherit;
-  }
-
-  .mobile-chat-messages {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-height: 0;
-    padding: 12px;
-    overflow-y: auto;
-  }
-
-  .mobile-message {
-    padding: 9px 10px;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, .76);
-    color: #344054;
-    font-size: 12px;
-    line-height: 1.45;
-  }
-
-  .mobile-message.real {
-    border-color: rgba(79, 109, 255, .24);
-    background: rgba(79, 109, 255, .07);
-  }
-
-  .mobile-message .sender {
-    display: block;
-    margin-bottom: 4px;
-    color: var(--text-muted);
-    font-size: 11px;
-    font-weight: 900;
-  }
-
-  .mobile-message img {
-    margin-top: 6px;
-    border-radius: 10px;
-  }
-
-  .mobile-chat-form {
-    display: grid;
-    gap: 8px;
-    padding: 10px;
-    border-top: 1px solid var(--border);
-    background: rgba(255, 255, 255, .94);
-  }
-
-  .chat-identity-toggle {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-  }
-
-  .chat-identity-toggle label {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    min-height: 30px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: #fff;
-    font-size: 12px;
-    font-weight: 800;
-  }
-
-  .chat-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 38px 38px;
-  }
-
-  .chat-file-button,
-  .chat-send {
-    display: grid;
-    place-items: center;
-    width: 38px;
-    height: 36px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: #fff;
-    font-weight: 900;
-    cursor: pointer;
-  }
-
-  .chat-file-button input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .chat-send {
-    border: 0;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    color: #fff;
-  }
-
-  .desktop-chat-panel {
-    display: block;
-  }
-
-  .desktop-chat-panel .mobile-chat-card {
-    min-height: 560px;
-    max-height: calc(100vh - 48px);
-  }
-
-  .desktop-chat-panel .mobile-chat-messages {
-    min-height: 280px;
-    max-height: calc(100vh - 300px);
-  }
-
-  @media (max-width: 760px) {
-    .mobile-mode-tabs {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 6px;
-      padding: 8px;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      background: rgba(255, 255, 255, .92);
-      box-shadow: 0 14px 34px rgba(15, 23, 42, .10);
-      backdrop-filter: blur(16px);
-    }
-
-    .mobile-mode-button {
-      min-height: 38px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, .78);
-      color: var(--text-muted);
-      font: inherit;
-      font-size: 13px;
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .mobile-mode-button.active {
-      border-color: transparent;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color: #fff;
-      box-shadow: 0 10px 24px rgba(79, 109, 255, .22);
-    }
-
-    .mobile-mode-content {
-      min-width: 0;
-      min-height: 0;
-    }
-
-    .mobile-board-pane {
-      display: none;
-      flex-direction: column;
-      gap: 12px;
-      min-width: 0;
-      padding-bottom: 72px;
-    }
-
-    .mobile-board-card {
-      display: grid;
-      gap: 10px;
-      padding: 14px;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      background: rgba(255, 255, 255, .86);
-      box-shadow: 0 14px 34px rgba(15, 23, 42, .08);
-    }
-
-    .mobile-board-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      color: var(--text-primary);
-      font-size: 15px;
-      font-weight: 900;
-    }
-
-    .mobile-board-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-    }
-
-    .mobile-board-link {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 44px;
-      padding: 8px 10px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: #fff;
-      color: var(--text-primary);
-      font-size: 13px;
-      font-weight: 900;
-      text-align: center;
-    }
-
-    .mobile-board-create {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 8px;
-    }
-
-    .mobile-board-create input {
-      min-width: 0;
-      height: 42px;
-      padding: 0 12px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: #fff;
-      color: var(--text-primary);
-      font: inherit;
-      font-weight: 800;
-    }
-
-    .mobile-orbit-rail {
-      display: none;
-      margin: -4px 0 2px;
-    }
-
-    .home-shell[data-mobile-mode="board"] .mobile-orbit-rail {
-      display: block;
-    }
-
-    .mobile-orbit-strip {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding: 2px 2px 8px;
-      scrollbar-width: none;
-    }
-
-    .mobile-orbit-strip::-webkit-scrollbar {
-      display: none;
-    }
-
-    .orbit-chip {
-      flex: 0 0 auto;
-      display: inline-grid;
-      grid-template-columns: auto auto;
-      align-items: center;
-      gap: 6px;
-      min-height: 40px;
-      padding: 0 12px;
-      white-space: nowrap;
-    }
-
-    .orbit-chip.featured {
-      min-width: 118px;
-      justify-content: center;
-      border-color: rgba(79, 109, 255, .26);
-      background: #fff;
-      color: var(--text-primary);
-      box-shadow: 0 10px 24px rgba(15, 23, 42, .08);
-    }
-
-    .orbit-more {
-      position: relative;
-      flex: 0 0 auto;
-    }
-
-    .orbit-more summary {
-      list-style: none;
-    }
-
-    .orbit-more summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .orbit-more-list {
-      position: fixed;
-      left: 12px;
-      right: 12px;
-      bottom: 80px;
-      z-index: 30;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-      max-height: 54vh;
-      overflow-y: auto;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      background: rgba(255, 255, 255, .96);
-      box-shadow: 0 24px 60px rgba(15, 23, 42, .22);
-      backdrop-filter: blur(18px);
-    }
-
-    .orbit-more-list .orbit-chip {
-      width: 100%;
-      justify-content: center;
-    }
-
-    .home-feed-pane,
-    .mobile-chat-pane {
-      min-width: 0;
-      min-height: 0;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      padding-bottom: 72px;
-      scrollbar-width: thin;
-    }
-
-    .home-feed-pane {
-      padding-right: 6px;
-    }
-
-    .mobile-chat-pane {
-      padding-left: 0;
-      flex-direction: column;
-    }
-
-    .home-shell[data-mobile-mode="board"] .mobile-board-pane,
-    .home-shell[data-mobile-mode="feed"] .home-feed-pane,
-    .home-shell[data-mobile-mode="chat"] .mobile-chat-pane {
-      display: flex;
-    }
-
-    .home-shell[data-mobile-mode="board"] .home-feed-pane,
-    .home-shell[data-mobile-mode="board"] .mobile-chat-pane,
-    .home-shell[data-mobile-mode="feed"] .mobile-board-pane,
-    .home-shell[data-mobile-mode="feed"] .mobile-chat-pane,
-    .home-shell[data-mobile-mode="chat"] .mobile-board-pane,
-    .home-shell[data-mobile-mode="chat"] .home-feed-pane {
-      display: none;
-    }
-
-    .feed-header {
-      align-items: flex-start;
-      flex-direction: column;
-    }
-
-    .feed-title {
-      font-size: 21px;
-    }
-
-    .feed-tabs {
-      width: max-content;
-      max-width: 100%;
-      overflow-x: auto;
-      flex-wrap: nowrap;
-    }
-
-    .compose-card {
-      padding: 12px;
-    }
-
-    .compose-card .avatar,
-    .compose-card .avatar-placeholder {
-      display: none;
-    }
-
-    .compose-actions {
-      align-items: stretch;
-      flex-direction: column;
-    }
-
-    .post-card {
-      padding: 12px;
-      border-radius: 14px;
-    }
-
-    .post-card-header {
-      align-items: flex-start;
-    }
-
-    .post-title {
-      font-size: 17px;
-    }
-
-    .post-content {
-      font-size: 13px;
-      line-height: 1.55;
-    }
-
-    .post-actions {
-      flex-wrap: wrap;
-    }
-  }
-</style>
-{% endblock %}
-
-{% block content %}
-<section class="home-shell" data-mobile-mode-shell data-mobile-mode="feed">
-  <nav class="mobile-mode-tabs" data-mobile-mode-tabs aria-label="모바일 화면 전환">
-    <button class="mobile-mode-button" type="button" data-mobile-mode-target="board">게시판</button>
-    <button class="mobile-mode-button active" type="button" data-mobile-mode-target="feed">피드</button>
-    <button class="mobile-mode-button" type="button" data-mobile-mode-target="chat">채팅</button>
-  </nav>
-  <section class="mobile-board-pane" data-mobile-mode-panel="board" aria-label="게시판">
-    <div class="mobile-board-card">
-      <div class="mobile-board-title">
-        <span>인기 게시판</span>
-        <span class="hint">자주 열리는 궤도</span>
-      </div>
-      <div class="mobile-board-grid">
-        {% for orbit in mobile_orbits %}
-          <a class="mobile-board-link {% if orbit.active %}active{% endif %}" href="{{ orbit.href }}">{{ orbit.icon }} {{ orbit.name }}</a>
-        {% empty %}
-          <span class="hint">아직 추천할 게시판이 없습니다.</span>
-        {% endfor %}
-      </div>
-    </div>
-    <form class="mobile-board-card" method="post">
-      {% csrf_token %}
-      <div class="mobile-board-title">
-        <span>새 궤도 생성</span>
-        <span class="hint">원하는 주제로 바로 만들기</span>
-      </div>
-      <div class="mobile-board-create">
-        <input type="hidden" name="action" value="create_board">
-        <input type="hidden" name="category_id" value="{{ board_search_category.id }}">
-        <input type="text" name="board_name" placeholder="만들고 싶은 궤도 이름" data-focus-board-search required>
-        <button class="btn btn-primary" type="submit">생성</button>
-      </div>
-    </form>
-  </section>
-  <nav class="mobile-orbit-rail" aria-label="인기 궤도">
-    <div class="mobile-orbit-strip">
-      {% for orbit in mobile_orbits %}
-        {% if forloop.counter <= 2 %}
-          <a class="orbit-chip featured {% if orbit.active %}active{% endif %}" href="{{ orbit.href }}">
-            <span aria-hidden="true">{{ orbit.icon }}</span>
-            <span>{{ orbit.name }}</span>
-          </a>
-        {% endif %}
-      {% endfor %}
-      {% if mobile_orbits|length > 2 %}
-        <details class="orbit-more">
-          <summary class="orbit-chip" aria-label="더 많은 궤도 보기">+{{ mobile_orbits|length|add:"-2" }}</summary>
-          <div class="orbit-more-list">
-            {% for orbit in mobile_orbits %}
-              {% if forloop.counter > 2 %}
-                <a class="orbit-chip {% if orbit.active %}active{% endif %}" href="{{ orbit.href }}">
-                  <span aria-hidden="true">{{ orbit.icon }}</span>
-                  <span>{{ orbit.name }}</span>
-                </a>
-              {% endif %}
-            {% endfor %}
-          </div>
-        </details>
-      {% endif %}
-    </div>
-  </nav>
-
-  <div class="mobile-mode-content">
-    <section class="home-feed-pane" aria-label="피드">
-      <div class="feed-header">
-        <span class="feed-title">
-          {% if selected_board %}
-            {{ selected_board.name }}
-          {% elif selected_category %}
-            {{ selected_category.name }}
-          {% elif search_query %}
-            "{{ search_query }}" 검색
-          {% else %}
-            전체 피드
-          {% endif %}
-        </span>
-        {% if user.is_authenticated %}
-          <a href="{% url 'create' %}" class="btn btn-primary btn-sm">글쓰기</a>
-        {% endif %}
-      </div>
-
-      <div class="feed-tabs">
-        <a href="{% url 'home' %}" class="feed-tab {% if not following_feed %}active{% endif %}">전체</a>
-        {% if user.is_authenticated %}
-          <a href="{% url 'home' %}?feed=following" class="feed-tab {% if following_feed %}active{% endif %}">구독</a>
-        {% else %}
-          <a href="{% url 'login' %}" class="feed-tab">구독</a>
-        {% endif %}
-        <a href="{% url 'home' %}" class="feed-tab">인기</a>
-      </div>
-
-      {% if search_query %}
-        <section class="featured-orbits" aria-label="검색 바로가기">
-          <strong>빠른 이동</strong>
-          <div class="search-result-row">
-            {% for board in search_boards %}
-              <a class="search-chip" href="?board={{ board.slug }}">{{ board.name }}</a>
-            {% endfor %}
-            {% for category in search_categories %}
-              <a class="search-chip" href="?category={{ category.id }}">{{ category.path_label }}</a>
-            {% endfor %}
-            {% for found_profile in search_profiles %}
-              <a class="search-chip" href="{% url 'profile_feed' found_profile.user.username %}">@{{ found_profile.display_name }}</a>
-            {% endfor %}
-            {% if not search_boards and not search_categories and not search_profiles %}
-              <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="create_board">
-                <input type="hidden" name="category_id" value="{{ board_search_category.id }}">
-                <input type="hidden" name="board_name" value="{{ search_query }}">
-                <button class="search-chip" type="submit">"{{ search_query }}" 궤도 만들기</button>
-              </form>
-            {% endif %}
-          </div>
-        </section>
-      {% endif %}
-
-      {% if featured_orbits %}
-        <section class="featured-orbits" aria-label="오늘 뜨는 궤도">
-          <strong>오늘 뜨는 궤도</strong>
-          <span class="hint">실시간성이 높은 주제를 먼저 열어볼 수 있어요.</span>
-          <div class="featured-row">
-            {% for orbit in featured_orbits %}
-              {% if orbit.category %}
-                <a class="search-chip" href="?category={{ orbit.category.id }}">{{ orbit.icon }} {{ orbit.name }}</a>
-              {% endif %}
-            {% endfor %}
-          </div>
-        </section>
-      {% endif %}
-
-      {% if selected_category and not subtopic_items %}
-        <form class="featured-orbits" method="post">
-          {% csrf_token %}
-          <strong>새 궤도 생성</strong>
-          <span class="hint">이 분류에 아직 열린 게시판이 없습니다.</span>
-          <input type="hidden" name="action" value="create_board">
-          <input type="hidden" name="category_id" value="{{ selected_category.id }}">
-          <input type="text" name="board_name" placeholder="새 궤도 이름" data-focus-board-search required>
-          <button class="btn btn-primary" type="submit">새 궤도 생성</button>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0a1024">
+    <title>Orbix</title>
+    <link rel="manifest" href="{% url 'webmanifest' %}">
+    <link rel="apple-touch-icon" href="{% static 'posts/orbix-logo.png' %}">
+    <style>
+        :root {
+            --ink: #17191f;
+            --muted: #667085;
+            --line: #d8e0ec;
+            --panel: #ffffff;
+            --soft: #f7f9fd;
+            --accent: #e5484d;
+            --green: #1f8f61;
+            --blue: #2563eb;
+            --cyan: #0891b2;
+            --violet: #8b5cf6;
+            --amber: #b46a14;
+            --rose-soft: #fff2f2;
+            --blue-soft: #eef4ff;
+            --cyan-soft: #ecfeff;
+            --violet-soft: #f5f3ff;
+            --amber-soft: #fff8e7;
+            --shadow: 0 16px 42px rgba(25, 31, 44, 0.09);
+            --shadow-soft: 0 8px 22px rgba(25, 31, 44, 0.06);
+            --side-sticky-top: 184px;
+            --content-grid-max: 1440px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background:
+                linear-gradient(135deg, rgba(20, 184, 255, 0.11) 0%, rgba(255, 255, 255, 0) 34%),
+                linear-gradient(225deg, rgba(139, 92, 246, 0.11) 0%, rgba(255, 255, 255, 0) 36%),
+                linear-gradient(180deg, #fbfcff 0%, #eef4f9 56%, #e7edf5 100%);
+            color: var(--ink);
+            font-family: Arial, "Noto Sans KR", sans-serif;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: 240px minmax(220px, 1fr) auto;
+            gap: 16px;
+            align-items: center;
+            min-height: 64px;
+            padding: 0 24px;
+            border-bottom: 1px solid rgba(216, 224, 236, 0.78);
+            background:
+                linear-gradient(90deg, rgba(255, 255, 255, 0.95), rgba(248, 251, 255, 0.9)),
+                rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 28px rgba(25, 31, 44, 0.05);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 20px;
+        }
+
+        .brand-logo {
+            display: block;
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            object-fit: cover;
+            box-shadow: 0 8px 22px rgba(22, 24, 29, 0.18);
+        }
+
+        .brand-wordmark {
+            background: linear-gradient(100deg, #14b8ff 0%, #4763ff 45%, #d946ef 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .brand-mark,
+        .avatar {
+            display: grid;
+            place-items: center;
+            background: var(--ink);
+            color: #fff;
+            font-weight: 800;
+        }
+
+        .brand-mark {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            box-shadow: 0 8px 22px rgba(22, 24, 29, 0.18);
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            flex: 0 0 auto;
+        }
+
+        .search {
+            width: 100%;
+            height: 40px;
+            padding: 0 14px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.86);
+            color: var(--ink);
+            font-size: 14px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), var(--shadow-soft);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .search-form {
+            width: 100%;
+            max-width: 620px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 44px;
+            gap: 8px;
+        }
+
+        .search-button {
+            display: grid;
+            place-items: center;
+            width: 44px;
+            height: 40px;
+            border: 0;
+            border-radius: 8px;
+            background: var(--blue);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
+        }
+
+        .search:focus {
+            outline: 0;
+            border-color: rgba(37, 99, 235, 0.58);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), var(--shadow-soft);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 0 14px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.92);
+            color: var(--ink);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 5px 14px rgba(25, 31, 44, 0.04);
+            transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .button:hover {
+            border-color: #c7d1df;
+            transform: translateY(-1px);
+        }
+
+        .button.primary {
+            border-color: transparent;
+            background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 52%, #d946ef 100%);
+            color: #fff;
+            box-shadow: 0 10px 22px rgba(99, 102, 241, 0.24);
+        }
+
+        .search-results {
+            display: grid;
+            gap: 12px;
+            padding: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.78);
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 16px;
+        }
+
+        .search-result-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .search-chip {
+            display: inline-flex;
+            align-items: center;
+            min-height: 32px;
+            padding: 0 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.42);
+            background: rgba(255, 255, 255, 0.84);
+            color: var(--ink);
+            font-size: 13px;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .search-create-form {
+            display: inline-flex;
+        }
+
+        .search-empty {
+            padding: 20px;
+            border: 1px dashed rgba(148, 163, 184, 0.55);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.68);
+            color: var(--muted);
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(150px, 260px) minmax(460px, 760px) minmax(320px, 380px);
+            gap: 20px;
+            width: min(1540px, 100%);
+            margin: 0 auto;
+            padding: 20px 24px 36px;
+            min-height: 520px;
+        }
+
+        .left-rail {
+            min-width: 0;
+        }
+
+        .left-rail .summary-grid {
+            position: sticky;
+            top: var(--side-sticky-top);
+            z-index: 6;
+            grid-template-columns: 1fr;
+            min-height: calc(100vh - var(--side-sticky-top) - 16px);
+            max-height: calc(100vh - var(--side-sticky-top) - 16px);
+            overflow-y: auto;
+            margin-top: 0;
+            padding-right: 4px;
+            overscroll-behavior: contain;
+        }
+
+        .left-rail .summary-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .left-rail .summary-grid::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            background: #c6ccd7;
+        }
+
+        .feed-column {
+            min-height: 0;
+            padding-right: 6px;
+            overscroll-behavior: contain;
+        }
+
+        .feed-column::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .feed-column::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            background: #c6ccd7;
+        }
+
+        .chat {
+            position: sticky;
+            top: var(--side-sticky-top);
+            z-index: 6;
+            align-self: start;
+            max-height: calc(100vh - var(--side-sticky-top) - 16px);
+            overflow-y: auto;
+            padding-right: 4px;
+            overscroll-behavior: contain;
+        }
+
+        .chat::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            background: #c6ccd7;
+        }
+
+        .panel,
+        .post,
+        .chat-box {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel);
+            box-shadow: var(--shadow);
+        }
+
+        .post,
+        .composer,
+        .summary-panel,
+        .chat-box,
+        .topic-shell {
+            position: relative;
+        }
+
+        .post::before,
+        .composer::before,
+        .summary-panel::before,
+        .chat-box::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto;
+            height: 3px;
+            background: linear-gradient(90deg, #14b8ff, #6366f1, #d946ef);
+            opacity: 0.9;
+            pointer-events: none;
+        }
+
+        .panel { padding: 14px; margin-bottom: 14px; }
+
+        .topic-header {
+            position: sticky;
+            top: 64px;
+            z-index: 8;
+            width: min(1540px, 100%);
+            margin: 0 auto;
+            padding: 10px 24px 0;
+            background: transparent;
+            backdrop-filter: blur(14px);
+        }
+
+        .topic-shell {
+            width: min(var(--content-grid-max), 100%);
+            padding: 10px;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .topic-topline {
+            display: block;
+        }
+
+        .topic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(98px, 1fr));
+            gap: 8px;
+        }
+
+        .topic-card {
+            display: grid;
+            place-items: center;
+            gap: 4px;
+            min-height: 58px;
+            padding: 7px 6px;
+            border: 1px solid #d9e1ec;
+            border-radius: 8px;
+            background:
+                linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            color: var(--ink);
+            font-size: 13px;
+            font-weight: 800;
+            text-align: center;
+            box-shadow: 0 7px 18px rgba(25, 31, 44, 0.05);
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+        }
+
+        .topic-card:hover,
+        .topic-card.active {
+            border-color: rgba(37, 99, 235, 0.62);
+            background: linear-gradient(180deg, #eff6ff 0%, #eef2ff 100%);
+            color: var(--blue);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(37, 99, 235, 0.14);
+        }
+
+        .topic-card.back {
+            border-style: dashed;
+            background: #fff;
+            color: var(--muted);
+        }
+
+        .topic-card.back:hover {
+            color: var(--blue);
+        }
+
+        .topic-icon {
+            display: grid;
+            place-items: center;
+            width: 28px;
+            height: 28px;
+            border: 1px solid rgba(203, 213, 225, 0.82);
+            border-radius: 8px;
+            background: linear-gradient(135deg, #f8fbff 0%, #eef6ff 48%, #f7f2ff 100%);
+            font-size: 17px;
+            line-height: 1;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84);
+        }
+
+        .subtopic-strip {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: minmax(92px, 116px);
+            grid-template-columns: none;
+            gap: 7px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--line);
+            overscroll-behavior-x: contain;
+            scrollbar-width: thin;
+        }
+
+        .subtopic-strip form {
+            display: inline-grid;
+        }
+
+        .subtopic-pill {
+            display: grid;
+            place-items: center;
+            gap: 4px;
+            min-height: 46px;
+            padding: 6px;
+            border: 1px solid #d9e1ec;
+            border-radius: 8px;
+            background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+            color: var(--ink);
+            font-size: 13px;
+            font-weight: 800;
+            text-align: center;
+            box-shadow: 0 6px 16px rgba(25, 31, 44, 0.04);
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+        }
+
+        button.subtopic-pill {
+            width: 100%;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .subtopic-pill.active,
+        .subtopic-pill:hover {
+            border-color: rgba(8, 145, 178, 0.62);
+            background: linear-gradient(180deg, #ecfeff 0%, #eef4ff 100%);
+            color: var(--blue);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(37, 99, 235, 0.12);
+        }
+
+        .subtopic-pill.selected-board {
+            border-color: #f2c94c;
+            background: #fff9df;
+            color: #7a4b00;
+            box-shadow: 0 10px 24px rgba(242, 201, 76, 0.24);
+        }
+
+        .subtopic-icon {
+            display: grid;
+            place-items: center;
+            width: 24px;
+            height: 24px;
+            border: 1px solid rgba(203, 213, 225, 0.78);
+            border-radius: 8px;
+            background: linear-gradient(135deg, #f8fbff 0%, #eef6ff 52%, #fff7ed 100%);
+            font-size: 15px;
+            line-height: 1;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+        }
+
+        .topic-board-strip {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: minmax(84px, 110px);
+            grid-template-columns: none;
+            gap: 8px;
+            margin-top: 10px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            overscroll-behavior-x: contain;
+            scrollbar-width: thin;
+        }
+
+        .topic-board-strip:empty {
+            display: none;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .summary-panel {
+            min-width: 0;
+            padding: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(216, 224, 236, 0.94);
+            border-radius: 8px;
+            background:
+                linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+            box-shadow: var(--shadow);
+        }
+
+        .summary-panel .section-title {
+            margin-bottom: 8px;
+        }
+
+        .compact-list {
+            display: grid;
+            gap: 6px;
+            counter-reset: compact-rank;
+        }
+
+        .compact-row {
+            display: grid;
+            position: relative;
+            gap: 2px;
+            min-width: 0;
+            padding: 9px 8px 9px 34px;
+            border-radius: 8px;
+            background: rgba(247, 249, 253, 0.72);
+            font-size: 12px;
+            font-weight: 800;
+            transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+        }
+
+        .compact-row::before {
+            counter-increment: compact-rank;
+            content: counter(compact-rank);
+            position: absolute;
+            left: 8px;
+            top: 10px;
+            display: grid;
+            place-items: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #14b8ff, #8b5cf6);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 900;
+        }
+
+        .compact-row:hover {
+            background: #eef4ff;
+            color: var(--blue);
+            transform: translateX(2px);
+        }
+
+        .compact-row span {
+            overflow: hidden;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .section-title {
+            margin: 0 0 12px;
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .metric,
+        .hint {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .metric { margin: 0 0 14px; }
+
+        .profile-card,
+        .mini-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-card {
+            padding: 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .profile-card strong,
+        .mini-profile strong {
+            display: block;
+            font-size: 14px;
+        }
+
+        .profile-card span,
+        .mini-profile span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .people-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .mini-profile {
+            min-height: 44px;
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .mini-profile:hover {
+            background: var(--soft);
+        }
+
+        .mini-profile .avatar {
+            width: 32px;
+            height: 32px;
+            font-size: 13px;
+        }
+
+        .universe-list {
+            display: grid;
+            gap: 10px;
+            max-height: none;
+            overflow: visible;
+            padding-right: 4px;
+            overscroll-behavior: contain;
+        }
+
+        .scroll-panel {
+            display: grid;
+            gap: 8px;
+            max-height: 260px;
+            overflow-y: auto;
+            padding-right: 4px;
+            overscroll-behavior: contain;
+        }
+
+        .scroll-panel::-webkit-scrollbar,
+        .universe-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .scroll-panel::-webkit-scrollbar-thumb,
+        .universe-list::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            background: #c6ccd7;
+        }
+
+        .board-row {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding: 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .board-row:hover,
+        .board-row.active {
+            border-color: var(--blue);
+            background: #eef4ff;
+        }
+
+        .board-row span {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .board-search {
+            width: 100%;
+            height: 44px;
+            padding: 0 15px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.92);
+            color: var(--ink);
+            font: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        }
+
+        .board-search-panel {
+            display: grid;
+            grid-template-columns: minmax(180px, 260px) minmax(260px, 1fr);
+            gap: 14px;
+            align-items: end;
+            margin-top: 14px;
+            padding: 0;
+            border-top: 0;
+            border-radius: 0;
+            background: transparent;
+        }
+
+        .board-search-panel .section-title {
+            margin-bottom: 7px;
+        }
+
+        .orbit-copy {
+            margin: 0;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.45;
+        }
+
+        .board-search-form {
+            display: grid;
+            grid-template-columns: 1fr 46px;
+            gap: 8px;
+        }
+
+        .board-search-button {
+            display: grid;
+            place-items: center;
+            width: 46px;
+            height: 44px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: linear-gradient(135deg, #111827, #2563eb);
+            color: #fff;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 800;
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+
+        .board-search-button:hover {
+            background: var(--blue);
+            transform: translateY(-1px);
+        }
+
+        .board-row.hidden {
+            display: none;
+        }
+
+        .topic-boards-panel.hidden,
+        .topic-board-group.hidden {
+            display: none;
+        }
+
+        .universe-trigger {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            min-height: 48px;
+            padding: 0 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            font: inherit;
+            font-weight: 800;
+        }
+
+        .universe-trigger:hover,
+        .universe-trigger.active {
+            border-color: var(--blue);
+            background: #eef4ff;
+            color: var(--blue);
+        }
+
+        .topic-branch {
+            display: grid;
+            gap: 8px;
+        }
+
+        .topic-branch.hidden,
+        .subtopic-list.hidden {
+            display: none;
+        }
+
+        .subtopic-trigger {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 38px;
+            margin-left: 14px;
+            padding: 0 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fafbfc;
+            color: var(--ink);
+            cursor: pointer;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .subtopic-toggle {
+            display: grid;
+            place-items: center;
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--muted);
+            cursor: pointer;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .subtopic-trigger.active {
+            border-color: var(--blue);
+            background: #eef4ff;
+            color: var(--blue);
+        }
+
+        .subtopic-trigger.active .subtopic-toggle {
+            border-color: var(--blue);
+            color: var(--blue);
+        }
+
+        .subtopic-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-left: 24px;
+            padding: 2px 0 6px;
+        }
+
+        .subtopic-list form {
+            display: inline-flex;
+        }
+
+        .subtopic-chip {
+            display: grid;
+            place-items: center;
+            gap: 4px;
+            min-height: 50px;
+            padding: 8px 7px;
+            border: 1px solid #d9e1ec;
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            font: inherit;
+            font-size: 12px;
+            font-weight: 800;
+            text-align: center;
+            transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+
+        .subtopic-chip.active,
+        .subtopic-chip:hover {
+            border-color: var(--blue);
+            background: #eef4ff;
+            color: var(--blue);
+            transform: translateY(-1px);
+        }
+
+        .board-chip-icon {
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .category-tree {
+            display: grid;
+            gap: 12px;
+        }
+
+        details {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        summary {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            cursor: pointer;
+            font-weight: 800;
+        }
+
+        .subcategory {
+            padding: 10px 12px 12px;
+            border-top: 1px solid var(--line);
+            background: #fafbfc;
+        }
+
+        .subcategory h3 {
+            margin: 0 0 8px;
+            font-size: 14px;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .chip {
+            min-height: 30px;
+            padding: 0 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .chip.active {
+            border-color: var(--blue);
+            background: #eef4ff;
+            color: var(--blue);
+        }
+
+        .quick-create {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .quick-create input,
+        .composer input,
+        .composer textarea,
+        .chat-form input {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font: inherit;
+        }
+
+        .quick-create input {
+            min-width: 0;
+            height: 34px;
+            padding: 0 10px;
+        }
+
+        .feed-heading {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 2px 0 14px;
+            padding: 12px 14px;
+            border: 1px solid rgba(216, 224, 236, 0.9);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.78);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .feed-heading h1 {
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 0;
+            background: linear-gradient(100deg, #111827, #2563eb 55%, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .feed-heading p {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .composer {
+            margin-bottom: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(216, 224, 236, 0.94);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: var(--shadow);
+        }
+
+        .composer-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--line);
+            background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 55%, #f5f3ff 100%);
+        }
+
+        .composer-head strong {
+            font-size: 14px;
+        }
+
+        .composer-body {
+            padding: 14px;
+        }
+
+        .composer input,
+        .composer textarea {
+            width: 100%;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            color: var(--ink);
+        }
+
+        .composer input {
+            height: 42px;
+            padding: 0;
+            margin-bottom: 4px;
+            font-weight: 700;
+            font-size: 19px;
+        }
+
+        .composer textarea {
+            min-height: 110px;
+            padding: 8px 0 0;
+            resize: vertical;
+        }
+
+        .composer input:focus,
+        .composer textarea:focus {
+            outline: 0;
+        }
+
+        .composer-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--line);
+        }
+
+        .media-upload {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin: 12px 0;
+        }
+
+        .media-status {
+            color: var(--blue);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .media-upload input {
+            width: auto;
+            height: auto;
+            padding: 8px;
+            margin: 0;
+            background: #fff;
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        .media-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 36px;
+            padding: 0 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 800;
+            transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+        }
+
+        .media-pill:hover {
+            border-color: var(--blue);
+            background: var(--blue-soft);
+            transform: translateY(-1px);
+        }
+
+        .media-pill input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .feed {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            align-items: start;
+        }
+
+        .post {
+            min-width: 0;
+            overflow: hidden;
+            border-color: rgba(216, 224, 236, 0.94);
+            background: rgba(255, 255, 255, 0.97);
+            cursor: pointer;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+        }
+
+        .post:hover {
+            border-color: #cbd6e4;
+            box-shadow: 0 18px 42px rgba(25, 31, 44, 0.11);
+            transform: translateY(-2px);
+        }
+
+        .post-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 14px 10px;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+        }
+
+        .post a {
+            position: relative;
+            z-index: 1;
+        }
+
+        .post-author-link {
+            display: inline-grid;
+            place-items: center;
+            flex: 0 0 auto;
+            border-radius: 50%;
+        }
+
+        .post-meta-link {
+            font-weight: 700;
+        }
+
+        .post-meta-link:hover,
+        .meta a:hover {
+            color: var(--blue);
+        }
+
+        .post-follow-form {
+            margin-left: auto;
+            flex: 0 0 auto;
+        }
+
+        .post-follow-form .button {
+            min-height: 32px;
+            padding: 0 11px;
+            font-size: 12px;
+        }
+
+        .meta strong {
+            display: block;
+            font-size: 15px;
+            overflow-wrap: anywhere;
+        }
+
+        .meta span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .post-media {
+            display: grid;
+            place-items: center;
+            min-height: 170px;
+            padding: 22px;
+            background:
+                linear-gradient(135deg, rgba(8, 145, 178, 0.9), rgba(37, 99, 235, 0.86), rgba(139, 92, 246, 0.88)),
+                repeating-linear-gradient(45deg, transparent 0 18px, rgba(255,255,255,0.18) 18px 19px);
+            color: #fff;
+            text-align: center;
+        }
+
+        .post-media.has-files {
+            position: relative;
+            display: block;
+            min-height: 0;
+            padding: 0;
+            background: #111;
+        }
+
+        .post-media.has-files img,
+        .post-media.has-files video {
+            display: block;
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            object-fit: cover;
+            background: #111;
+        }
+
+        .media-count-badge {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            display: inline-grid;
+            place-items: center;
+            min-width: 42px;
+            height: 32px;
+            padding: 0 10px;
+            border-radius: 999px;
+            background: rgba(17, 24, 39, 0.78);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 900;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.26);
+        }
+
+        .post-media h2 {
+            max-width: 100%;
+            margin: 0;
+            font-size: 28px;
+            line-height: 1.1;
+            word-break: keep-all;
+        }
+
+        .post-body {
+            padding: 14px;
+            border-top: 1px solid rgba(216, 224, 236, 0.56);
+        }
+
+        .post-body p {
+            margin: 0;
+            color: #333841;
+            line-height: 1.65;
+            word-break: keep-all;
+            overflow-wrap: anywhere;
+        }
+
+        .post-tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 0 14px 14px;
+        }
+
+        .post-tools form {
+            display: inline-flex;
+        }
+
+        .icon-button {
+            display: inline-grid;
+            place-items: center;
+            min-width: 38px;
+            height: 34px;
+            padding: 0 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #ffffff;
+            color: var(--ink);
+            cursor: pointer;
+            font: inherit;
+            font-size: 16px;
+            box-shadow: 0 6px 14px rgba(25, 31, 44, 0.04);
+            transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+
+        .icon-button:hover,
+        .icon-button.active {
+            border-color: var(--blue);
+            background: var(--blue-soft);
+            color: var(--blue);
+        }
+
+        .chat-box {
+            display: grid;
+            grid-template-rows: auto minmax(0, 1fr) auto;
+            height: min(600px, calc(100vh - var(--side-sticky-top) - 24px));
+            min-height: 480px;
+            overflow: hidden;
+            border-color: rgba(216, 224, 236, 0.94);
+            box-shadow: var(--shadow);
+        }
+
+        .chat-head {
+            position: relative;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--line);
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #ecfeff 45%, #f5f3ff 100%);
+        }
+
+        .chat-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            max-height: 28px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .chat-tab {
+            display: inline-flex;
+            align-items: center;
+            min-height: 28px;
+            padding: 0 9px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.86);
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+            transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+
+        .chat-tab.active {
+            border-color: rgba(37, 99, 235, 0.52);
+            background: linear-gradient(135deg, #eef4ff, #f5f3ff);
+            color: var(--blue);
+        }
+
+        .recent-chat-link,
+        .recent-chat-more {
+            display: inline-flex;
+            align-items: center;
+            max-width: 132px;
+            min-height: 26px;
+            padding: 0 9px;
+            border: 1px solid rgba(216, 224, 236, 0.9);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.78);
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .recent-chat-link {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .recent-chat-link[hidden] {
+            display: none;
+        }
+
+        .recent-chat-link:hover {
+            border-color: var(--blue);
+            background: var(--blue-soft);
+            color: var(--blue);
+        }
+
+        .recent-chat-more {
+            display: none;
+            color: var(--blue);
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .recent-chat-menu {
+            position: absolute;
+            right: 14px;
+            top: 84px;
+            z-index: 20;
+            display: none;
+            width: min(240px, calc(100% - 28px));
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 6px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 18px 42px rgba(25, 31, 44, 0.16);
+        }
+
+        .recent-chat-menu.open {
+            display: grid;
+            gap: 4px;
+        }
+
+        .recent-chat-menu a {
+            display: block;
+            overflow: hidden;
+            padding: 8px 10px;
+            border-radius: 8px;
+            color: var(--ink);
+            font-size: 12px;
+            font-weight: 800;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .recent-chat-menu a:hover {
+            background: var(--blue-soft);
+            color: var(--blue);
+        }
+
+        .private-chat-picker {
+            position: absolute;
+            right: 14px;
+            top: 84px;
+            z-index: 21;
+            display: none;
+            grid-template-columns: 1fr auto;
+            gap: 6px;
+            width: min(260px, calc(100% - 28px));
+            padding: 8px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 18px 42px rgba(25, 31, 44, 0.16);
+        }
+
+        .private-chat-picker.open {
+            display: grid;
+        }
+
+        .private-chat-picker select {
+            min-width: 0;
+            height: 32px;
+            padding: 0 8px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            font: inherit;
+            font-size: 12px;
+        }
+
+        .chat-tab-button {
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .live {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--green);
+            font-size: 12px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 0 4px rgba(31, 143, 97, 0.12);
+        }
+
+        .messages {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            padding: 12px;
+            background:
+                linear-gradient(180deg, #f8fbff 0%, #f4f7fb 100%);
+        }
+
+        .message {
+            max-width: 90%;
+            padding: 8px 9px;
+            border-radius: 8px;
+            background: #fff;
+            border: 1px solid var(--line);
+            font-size: 13px;
+            line-height: 1.45;
+            box-shadow: 0 6px 18px rgba(25, 31, 44, 0.04);
+        }
+
+        .message img {
+            display: block;
+            width: 100%;
+            max-height: 260px;
+            margin-top: 8px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .message.real {
+            border-color: #bcd3ff;
+            background: linear-gradient(135deg, #eef4ff, #f5f3ff);
+        }
+
+        .sender {
+            display: block;
+            overflow: hidden;
+            margin-bottom: 3px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chat-form {
+            display: grid;
+            gap: 8px;
+            padding: 10px;
+            border-top: 1px solid var(--line);
+            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+        }
+
+        .identity-toggle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .identity-toggle label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+
+        .identity-toggle label:hover {
+            border-color: var(--blue);
+            background: linear-gradient(135deg, var(--blue-soft), var(--violet-soft));
+            color: var(--blue);
+        }
+
+        .identity-toggle input {
+            width: auto;
+            margin: 0 6px 0 0;
+        }
+
+        .chat-row {
+            display: grid;
+            grid-template-columns: 1fr auto 42px;
+            gap: 8px;
+        }
+
+        .chat-form input[type="text"] {
+            min-width: 0;
+            height: 38px;
+            padding: 0 10px;
+        }
+
+        .send {
+            width: 42px;
+            height: 38px;
+            border: 0;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #111827, #2563eb);
+            color: #fff;
+            cursor: pointer;
+            font-size: 18px;
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+
+        .send:hover {
+            background: var(--blue);
+            transform: translateY(-1px);
+        }
+
+        .file-button {
+            position: relative;
+            display: grid;
+            place-items: center;
+            width: 42px;
+            height: 38px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            box-shadow: 0 6px 14px rgba(25, 31, 44, 0.04);
+            transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+        }
+
+        .file-button:hover,
+        .file-button:focus-within {
+            border-color: var(--blue);
+            background: linear-gradient(135deg, #eef4ff, #ecfeff);
+            transform: translateY(-1px);
+        }
+
+        .folder-icon {
+            position: relative;
+            display: block;
+            width: 22px;
+            height: 16px;
+            border: 2px solid currentColor;
+            border-radius: 4px;
+            background: linear-gradient(180deg, #ffffff 0%, #eef4ff 100%);
+        }
+
+        .folder-icon::before {
+            content: "";
+            position: absolute;
+            left: 2px;
+            top: -7px;
+            width: 10px;
+            height: 7px;
+            border: 2px solid currentColor;
+            border-bottom: 0;
+            border-radius: 4px 4px 0 0;
+            background: #fff;
+        }
+
+        .file-button input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @media (max-width: 1120px) {
+            .layout {
+                grid-template-columns: 1fr;
+                height: auto;
+                min-height: 0;
+                overflow: visible;
+            }
+
+            .left-rail { display: none; }
+            .chat {
+                position: static;
+                max-height: none;
+                overflow: visible;
+                padding-right: 0;
+            }
+            .feed-column { overflow: visible; padding-right: 0; }
+            .chat-box { grid-template-rows: auto 260px auto; }
+            .board-search-panel { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 760px) {
+            .topbar {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 12px;
+            }
+
+            .nav-actions { overflow-x: auto; }
+            .layout { grid-template-columns: 1fr; padding: 12px; }
+            .topic-header { padding: 12px 12px 0; }
+            .topic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .feed { grid-template-columns: 1fr; }
+            .post-media { min-height: 220px; padding: 22px; }
+            .summary-grid { grid-template-columns: 1fr; }
+            .composer-actions { align-items: stretch; flex-direction: column; }
+            .button.primary { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="{% url 'home' %}" aria-label="Orbix home">
+            <img class="brand-logo" src="{% static 'posts/orbix-logo.png' %}?v=20260502b" alt="" aria-hidden="true">
+            <span class="brand-wordmark">Orbix</span>
+        </a>
+        <form class="search-form" action="{% url 'home' %}" method="get" role="search">
+            <input class="search" name="q" value="{{ search_query }}" type="search" placeholder="게시판, 개인 피드, 게시글 검색" autocomplete="off" autocapitalize="off" spellcheck="false">
+            <button class="search-button" type="submit" title="검색" aria-label="검색">⌕</button>
         </form>
-      {% endif %}
-
-      {% if not search_query %}
-        <form class="compose-card" method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-          {% if selected_board %}
-            <input type="hidden" name="board_id" value="{{ selected_board.id }}">
-          {% endif %}
-          {% if profile and profile.photo %}
-            <img src="{{ profile.photo.url }}" alt="" class="avatar avatar-md">
-          {% elif user.is_authenticated %}
-            <div class="avatar-placeholder avatar-md">{{ user.username|first|upper }}</div>
-          {% endif %}
-          <div style="flex:1; min-width:0;">
-            <input name="title" maxlength="200" placeholder="새 게시글" required>
-            <textarea name="content" placeholder="무슨 일이 일어나고 있나요?" required></textarea>
-            <div class="compose-actions">
-              <label class="media-pill">
-                + 사진/영상
-                <input type="file" name="media" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime" multiple data-media-input>
-              </label>
-              <span class="hint" data-media-hint>사진은 최대 20장, 3MB 초과 사진은 자동 압축됩니다.</span>
-              <button class="btn btn-primary" type="submit">게시</button>
-            </div>
-          </div>
-        </form>
-      {% endif %}
-
-      {% for post in posts %}
-        <article class="post-card" data-post-url="{% url 'post_detail' post.id %}" role="link" tabindex="0">
-          <div class="post-card-header">
-            {% if post.author %}
-              <a class="orbit-ring-wrap" href="{% url 'profile_feed' post.author.username %}" onclick="event.stopPropagation();">
-                {% if post.author.profile.photo %}
-                  <img src="{{ post.author.profile.photo.url }}" alt="" class="avatar avatar-md">
-                {% else %}
-                  <div class="avatar-placeholder avatar-md">{{ post.author.username|first|upper }}</div>
-                {% endif %}
-              </a>
+        <nav class="nav-actions" aria-label="계정 메뉴">
+            {% if user.is_authenticated %}
+                <a class="button" href="{% url 'profile_feed' user.username %}">내 피드</a>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button class="button" type="submit">로그아웃</button>
+                </form>
             {% else %}
-              <div class="avatar-placeholder avatar-md">?</div>
+                <a class="button" href="{% url 'login' %}">로그인</a>
+                <a class="button primary" href="{% url 'signup' %}">가입</a>
             {% endif %}
-            <div style="flex:1; min-width:0;">
-              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                {% if post.author %}
-                  <a class="post-author-name" href="{% url 'profile_feed' post.author.username %}" onclick="event.stopPropagation();">
-                    {% if post.author.profile %}{{ post.author.profile.display_name }}{% else %}{{ post.author.username }}{% endif %}
-                  </a>
-                  <span class="post-author-handle">@{{ post.author.username }}</span>
-                {% else %}
-                  <span class="post-author-name">익명</span>
-                {% endif %}
-                <span class="post-time">· {{ post.created_at|timesince }} 전</span>
-              </div>
-              {% if post.board %}
-                <a class="board-tag" href="{% url 'home' %}?board={{ post.board.slug }}" onclick="event.stopPropagation();"># {{ post.board.name }}</a>
-              {% endif %}
-            </div>
-          </div>
+        </nav>
+    </header>
 
-          {% if post.title %}
-            <div class="post-title">{{ post.title }}</div>
-          {% endif %}
-          <div class="post-content">{{ post.content|truncatechars:300 }}</div>
-
-          {% if post.media.all %}
-            <div class="post-media-grid">
-              {% with post.media.first as m %}
-                {% if m.media_type == 'image' %}
-                  <img src="{{ m.file.url }}" alt="" loading="lazy">
-                {% elif m.media_type == 'video' %}
-                  <video src="{{ m.file.url }}" controls preload="none" style="width:100%;border-radius:14px;"></video>
-                {% endif %}
-              {% endwith %}
+    <section class="topic-header" aria-label="토픽 맵">
+        <div class="topic-shell">
+            <div class="topic-topline">
+                <div class="topic-grid">
+                    {% for topic in topic_cards %}
+                        <a class="topic-card {% if topic.active %}active{% endif %}" href="?category={{ topic.category.id }}" data-board-name="{{ topic.category.path_label }}">
+                            <span class="topic-icon" aria-hidden="true">{{ topic.icon }}</span>
+                            <span>{{ topic.category.name }}</span>
+                        </a>
+                    {% endfor %}
+                    {% if topic_category %}
+                        {% if topic_back_category %}
+                            <a class="topic-card back" href="?category={{ topic_back_category.id }}">
+                                <span class="topic-icon" aria-hidden="true">←</span>
+                                <span>{{ topic_back_category.name }}</span>
+                            </a>
+                        {% else %}
+                            <a class="topic-card back" href="{% url 'home' %}">
+                                <span class="topic-icon" aria-hidden="true">←</span>
+                                <span>돌아가기</span>
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
             </div>
-          {% endif %}
-
-          <div class="post-actions" onclick="event.stopPropagation();">
-            <form method="post" action="{% url 'home' %}" style="display:contents;">
-              {% csrf_token %}
-              <input type="hidden" name="action" value="toggle_like">
-              <input type="hidden" name="post_id" value="{{ post.id }}">
-              <button type="submit" class="post-action-btn {% if post.id in liked_post_ids %}liked{% endif %}">
-                <span class="heart-icon">{% if post.id in liked_post_ids %}♥{% else %}♡{% endif %}</span>
-                {{ post.like_count }}
-              </button>
-            </form>
-            <a href="{% url 'post_detail' post.id %}#comments" class="post-action-btn">댓글 {{ post.comment_count }}</a>
-            <button class="post-action-btn feed-share-button" type="button" data-share-path="{% url 'post_detail' post.id %}">공유</button>
-          </div>
-        </article>
-      {% empty %}
-        {% if sample_posts %}
-          {% for sample in sample_posts %}
-            <article class="post-card">
-              <div class="post-title">{{ sample.title }}</div>
-              <div class="post-content">{{ sample.content }}</div>
-            </article>
-          {% endfor %}
-        {% else %}
-          <div class="post-card empty-state">
-            <div class="empty-icon">◎</div>
-            <div class="empty-title">아직 게시글이 없습니다.</div>
-            <div class="empty-desc">
-              {% if user.is_authenticated %}
-                첫 게시글을 작성해보세요.
-              {% else %}
-                로그인하고 피드를 시작하세요.
-              {% endif %}
+            {% if topic_category %}
+                <div class="subtopic-strip">
+                    {% for item in subtopic_items %}
+                        {% if item.type == "category" %}
+                            <a class="subtopic-pill" href="?category={{ item.category.id }}" data-board-name="{{ item.category.path_label }}">
+                                <span class="subtopic-icon" aria-hidden="true">{{ item.icon }}</span>
+                                <span>{{ item.name }}</span>
+                            </a>
+                        {% elif item.type == "preset" %}
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="create_board">
+                                <input type="hidden" name="category_id" value="{{ item.category.id }}">
+                                <input type="hidden" name="board_name" value="{{ item.name }}">
+                                <button class="subtopic-pill {% if item.selected %}selected-board{% endif %}" type="submit">
+                                    <span class="subtopic-icon" aria-hidden="true">{{ item.icon }}</span>
+                                    <span>{{ item.name }}</span>
+                                </button>
+                            </form>
+                        {% elif item.type == "board" %}
+                            <a class="subtopic-pill {% if item.selected %}selected-board{% endif %}" href="?board={{ item.board.slug }}" data-board-name="{{ item.board.path_label }}">
+                                <span class="subtopic-icon" aria-hidden="true">{{ item.icon }}</span>
+                                <span>{{ item.name }}</span>
+                            </a>
+                        {% endif %}
+                    {% empty %}
+                        <button class="subtopic-pill active" type="button" data-focus-board-search>
+                            <span class="subtopic-icon" aria-hidden="true">＋</span>
+                            <span>새 궤도 생성</span>
+                        </button>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div class="board-search-panel">
+                <div>
+                    <h2 class="section-title">나의 궤도를 만들어보세요</h2>
+                    <p class="orbit-copy">클릭 한 번으로 만들어지는 나의 세계</p>
+                </div>
+                <form class="board-search-form" id="board-search-form" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="create_board">
+                    <input type="hidden" name="category_id" value="{{ board_search_category.id }}">
+                    <input class="board-search" id="board-search" name="board_name" type="search" placeholder="만들고 싶은 궤도 이름을 입력하세요" autocomplete="off" autocapitalize="off" spellcheck="false">
+                    <button class="board-search-button" type="submit" title="검색">⌕</button>
+                </form>
             </div>
-          </div>
-        {% endif %}
-      {% endfor %}
+        </div>
     </section>
 
-    <aside class="mobile-chat-pane" aria-label="실시간 채팅">
-      <div class="mobile-chat-card">
-        <div class="mobile-chat-head">
-          <div class="mobile-chat-title-row">
-            <span>{{ chat_title }}</span>
-            <span class="live"><span class="dot"></span>온라인</span>
-          </div>
-          <div class="mobile-chat-tabs">
-            <a class="mobile-chat-tab {% if chat_scope == 'global' %}active{% endif %}" href="{% url 'home' %}">전체</a>
-            {% if selected_category %}
-              <a class="mobile-chat-tab {% if chat_scope == 'category' %}active{% endif %}" href="?category={{ selected_category.id }}&chat=category">{{ selected_category.name }}</a>
-            {% elif selected_board %}
-              <a class="mobile-chat-tab {% if chat_scope == 'board' %}active{% endif %}" href="?board={{ selected_board.slug }}">{{ selected_board.name }}</a>
-            {% endif %}
-            {% if user.is_authenticated %}
-              <button class="mobile-chat-tab {% if private_user %}active{% endif %}" type="button" data-private-chat-toggle>개인</button>
-            {% endif %}
-          </div>
-          {% if recent_chat_links %}
-            <div class="recent-chat-strip">
-              {% for chat_link in recent_chat_links %}
-                <a class="mobile-chat-tab" href="{{ chat_link.href }}">{{ chat_link.label }}</a>
-              {% endfor %}
+    <main class="layout">
+        <aside class="left-rail" aria-label="인기 목록">
+            <div class="summary-grid" aria-label="인기 요약">
+                <section class="summary-panel">
+                    <h2 class="section-title">Popular Posts Top 10</h2>
+                    <div class="compact-list">
+                        {% for post in popular_posts %}
+                            <a class="compact-row" href="{% url 'post_detail' post.id %}">
+                                {{ post.title }}
+                                <span>
+                                    {% if post.board %}
+                                        {{ post.board.category.name }} > {{ post.board.name }}
+                                    {% else %}
+                                        개인 피드
+                                    {% endif %}
+                                    · 좋아요 {{ post.like_count }} · 댓글 {{ post.comment_count }}
+                                </span>
+                            </a>
+                        {% empty %}
+                            <div class="compact-row">
+                                아직 표시할 게시글이 없습니다.
+                                <span>게시글 반응이 생기면 여기에 나타납니다.</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                <section class="summary-panel">
+                    <h2 class="section-title">Popular Boards Top 10</h2>
+                    <div class="compact-list">
+                        {% for board in popular_boards %}
+                            <a class="compact-row" href="?board={{ board.slug }}" data-board-name="{{ board.path_label }}">
+                                {{ board.name }}
+                                <span>{{ board.category.path_label }} · 글 {{ board.post_count }} · 채팅 {{ board.chat_count }}</span>
+                            </a>
+                        {% empty %}
+                            <div class="compact-row">
+                                아직 생성된 게시판이 없습니다.
+                                <span>대분류를 열어 첫 공간을 만들어보세요.</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
             </div>
-          {% endif %}
-          {% if user.is_authenticated %}
-            <form class="mobile-private-picker" method="get" data-private-chat-picker>
-              <input type="hidden" name="chat" value="private">
-              <select name="private_user" aria-label="개인채팅 상대">
-                {% for person in profiles %}
-                  {% if person.user != user %}
-                    <option value="{{ person.user.id }}" {% if private_user.id == person.user.id %}selected{% endif %}>{{ person.display_name }}</option>
-                  {% endif %}
-                {% endfor %}
-              </select>
-              <button class="btn btn-sm" type="submit">열기</button>
+        </aside>
+        <section class="feed-column" aria-label="피드">
+            <div class="feed-heading">
+                <div>
+                    {% if search_query %}
+                        <h1>"{{ search_query }}" 검색</h1>
+                        <p>게시판, 카테고리, 사용자, 게시글을 함께 찾았습니다.</p>
+                    {% elif selected_board %}
+                        <h1>{{ selected_board.name }}</h1>
+                        <p>{{ selected_board.category.path_label }} 게시판</p>
+                    {% elif selected_category %}
+                        <h1>{{ selected_category.name }}</h1>
+                        <p>{{ selected_category.path_label }} 전체 게시글</p>
+                    {% else %}
+                        <h1>전체 피드</h1>
+                        <p>주제 게시판 글과 사람들의 개인 피드가 함께 흐릅니다.</p>
+                    {% endif %}
+                </div>
+                {% if search_query or selected_board or selected_category %}
+                    <a class="button" href="{% url 'home' %}">전체 보기</a>
+                {% endif %}
+            </div>
+
+            {% if search_query %}
+                <section class="search-results" aria-label="검색 바로가기">
+                    <div>
+                        <strong>빠른 이동</strong>
+                        <span class="hint">원하는 궤도나 피드를 바로 열 수 있어요.</span>
+                    </div>
+                    <div class="search-result-row">
+                        {% for board in search_boards %}
+                            <a class="search-chip" href="?board={{ board.slug }}">{{ board.name }} · {{ board.category.path_label }}</a>
+                        {% endfor %}
+                        {% for category in search_categories %}
+                            <a class="search-chip" href="?category={{ category.id }}">{{ category.path_label }}</a>
+                        {% endfor %}
+                        {% for profile in search_profiles %}
+                            <a class="search-chip" href="{% url 'profile_feed' profile.user.username %}">@{{ profile.display_name }}</a>
+                        {% endfor %}
+                        {% if not search_boards and not search_categories and not search_profiles %}
+                            <form class="search-create-form" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="create_board">
+                                <input type="hidden" name="category_id" value="{{ board_search_category.id }}">
+                                <input type="hidden" name="board_name" value="{{ search_query }}">
+                                <button class="search-chip" type="submit">"{{ search_query }}" 궤도 만들기</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </section>
+            {% endif %}
+
+            {% if featured_orbits %}
+                <section class="search-results" aria-label="오늘 뜨는 궤도">
+                    <div>
+                        <strong>오늘 뜨는 궤도</strong>
+                        <span class="hint">실시간성이 높은 주제를 먼저 열어볼 수 있어요.</span>
+                    </div>
+                    <div class="search-result-row">
+                        {% for orbit in featured_orbits %}
+                            {% if orbit.category %}
+                                <a class="search-chip" href="?category={{ orbit.category.id }}">{{ orbit.icon }} {{ orbit.name }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+
+            {% if not search_query %}
+            <form class="composer" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% if selected_board %}
+                    <input type="hidden" name="board_id" value="{{ selected_board.id }}">
+                {% endif %}
+                <div class="composer-head">
+                    <strong>{% if selected_board %}{{ selected_board.name }}에 글쓰기{% else %}새 게시글{% endif %}</strong>
+                    <span class="hint">{% if selected_board %}게시판 피드{% elif selected_category %}분류 피드{% else %}전체 피드{% endif %}</span>
+                </div>
+                <div class="composer-body">
+                    <input name="title" maxlength="200" placeholder="제목" required>
+                    <textarea name="content" placeholder="무슨 일이 일어나고 있나요?" required></textarea>
+                    <div class="media-upload">
+                        <label class="media-pill">
+                            + 사진/영상
+                            <input data-media-input type="file" name="media" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime" multiple>
+                        </label>
+                        <span class="hint" data-media-hint>사진은 최대 20장, 3MB 초과 사진은 자동 압축됩니다.</span>
+                    </div>
+                    <div class="composer-actions">
+                        <span class="hint">
+                            {% if user.is_authenticated %}
+                                글은 게시판과 내 개인 피드에 동시에 남습니다.
+                            {% else %}
+                                로그인하지 않으면 개인 피드에는 연결되지 않습니다.
+                            {% endif %}
+                        </span>
+                        <button class="button primary" type="submit">게시</button>
+                    </div>
+                </div>
             </form>
-          {% endif %}
-        </div>
+            {% endif %}
 
-        <div class="mobile-chat-messages" id="messages" data-chat-messages>
-          {% for chat in chat_messages %}
-            <div class="mobile-message {{ chat.identity_mode }}">
-              <span class="sender">
-                {% if chat.identity_mode == 'real' and chat.user %}
-                  <a href="{% url 'profile_feed' chat.user.username %}">{{ chat.sender_name }}</a>
-                {% else %}
-                  익명
+            {% if not search_query and not selected_board and not selected_category %}
+                <div class="feed-toolbar">
+                    <a class="button {% if not following_feed %}primary{% endif %}" href="{% url 'home' %}">전체 피드</a>
+                    {% if user.is_authenticated %}
+                        <a class="button {% if following_feed %}primary{% endif %}" href="?feed=following">구독 피드</a>
+                    {% else %}
+                        <a class="button" href="{% url 'login' %}">구독 피드</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <div class="feed">
+                {% for post in posts %}
+                    <article class="post" data-post-url="{% url 'post_detail' post.id %}" role="link" tabindex="0">
+                        <div class="post-head">
+                            {% if post.author %}
+                                <a class="post-author-link" href="{% url 'profile_feed' post.author.username %}" aria-label="{{ post.author.profile.display_name|default:post.author.username }} 피드">
+                                    <span class="avatar">
+                                        {% if post.author.profile %}
+                                            {{ post.author.profile.display_name|first|upper }}
+                                        {% else %}
+                                            {{ post.author.username|first|upper }}
+                                        {% endif %}
+                                    </span>
+                                </a>
+                            {% else %}
+                                <div class="avatar">{{ post.title|first|upper }}</div>
+                            {% endif %}
+                            <div class="meta">
+                                <strong><a href="{% url 'post_detail' post.id %}">{{ post.title }}</a></strong>
+                                <span>
+                                    {% if post.author %}
+                                        <a href="{% url 'profile_feed' post.author.username %}">@{{ post.author.profile.display_name|default:post.author.username }}</a>
+                                    {% else %}
+                                        익명 작성자
+                                    {% endif %}
+                                    ·
+                                    {% if post.board %}
+                                        {% if post.board.category.parent %}
+                                            {% if post.board.category.parent.parent %}
+                                                <a class="post-meta-link" href="?category={{ post.board.category.parent.parent.id }}">{{ post.board.category.parent.parent.name }}</a>
+                                                >
+                                            {% endif %}
+                                            <a class="post-meta-link" href="?category={{ post.board.category.parent.id }}">{{ post.board.category.parent.name }}</a>
+                                            >
+                                        {% endif %}
+                                        <a class="post-meta-link" href="?category={{ post.board.category.id }}">{{ post.board.category.name }}</a>
+                                        >
+                                        <a class="post-meta-link" href="?board={{ post.board.slug }}">{{ post.board.name }}</a>
+                                    {% else %}
+                                        미분류
+                                    {% endif %}
+                                    · {{ post.created_at|date:"Y.m.d H:i" }}
+                                </span>
+                            </div>
+                            {% if user.is_authenticated and post.author and post.author != user %}
+                                <form class="post-follow-form" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="toggle_subscription">
+                                    <input type="hidden" name="username" value="{{ post.author.username }}">
+                                    <button class="button {% if post.author.id not in followed_user_ids %}primary{% endif %}" type="submit">
+                                        {% if post.author.id in followed_user_ids %}구독 중{% else %}구독{% endif %}
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                        {% if post.media.all %}
+                            <div class="post-media has-files">
+                                {% for item in post.media.all %}
+                                    {% if forloop.first %}
+                                        {% if item.media_type == 'image' %}
+                                            <img src="{{ item.file.url }}" alt="{{ post.title }}">
+                                        {% else %}
+                                            <video src="{{ item.file.url }}" controls></video>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if post.media.all|length > 1 %}
+                                    <span class="media-count-badge">+{{ post.media.all|length|add:"-1" }}</span>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="post-media">
+                                <h2>{{ post.title }}</h2>
+                            </div>
+                        {% endif %}
+                        <div class="post-body">
+                            <p>{{ post.content }}</p>
+                        </div>
+                        <div class="post-tools" aria-label="게시글 반응">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="toggle_like">
+                                <input type="hidden" name="post_id" value="{{ post.id }}">
+                                <button class="icon-button {% if post.id in liked_post_ids %}active{% endif %}" type="submit" title="좋아요">
+                                    ♡ {{ post.like_count }}
+                                </button>
+                            </form>
+                            <a class="icon-button" href="{% url 'post_detail' post.id %}#comments" title="댓글">⌕ {{ post.comment_count }}</a>
+                            <button class="icon-button feed-share-button" type="button" title="공유" data-share-path="{% url 'post_detail' post.id %}">↗</button>
+                        </div>
+                    </article>
+                {% endfor %}
+
+                {% if search_query and not posts %}
+                    <div class="search-empty">
+                        "{{ search_query }}"와 일치하는 게시글이 아직 없습니다. 검색어로 새 궤도를 만들어 시작해보세요.
+                    </div>
                 {% endif %}
-                · {{ chat.created_at|date:"H:i" }}
-              </span>
-              {% if chat.message %}{{ chat.message }}{% endif %}
-              {% if chat.image %}<img src="{{ chat.image.url }}" alt="채팅 이미지">{% endif %}
-            </div>
-          {% empty %}
-            <div class="mobile-message">아직 채팅이 없습니다. 익명으로 가볍게 말하거나 개인 피드 이름으로 참여할 수 있어요.</div>
-          {% endfor %}
-        </div>
 
-        <form class="mobile-chat-form" method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-          <input type="hidden" name="action" value="send_chat">
-          <input type="hidden" name="chat_scope" value="{{ chat_scope }}">
-          {% if private_user %}
-            <input type="hidden" name="recipient_id" value="{{ private_user.id }}">
-          {% endif %}
-          <div class="chat-identity-toggle">
-            <label><input type="radio" name="identity_mode" value="anonymous" checked> 익명</label>
-            <label><input type="radio" name="identity_mode" value="real" {% if not user.is_authenticated %}disabled{% endif %}> 실명</label>
-          </div>
-          <div class="chat-row">
-            <input class="mobile-chat-input" data-chat-message type="text" name="message" autocomplete="off" placeholder="메시지">
-            <label class="chat-file-button" title="사진 첨부">
-              +
-              <input type="file" name="image" accept="image/jpeg,image/png,image/gif,image/webp">
-            </label>
-            <button class="chat-send" type="submit">›</button>
-          </div>
-        </form>
-      </div>
-    </aside>
-  </div>
-</section>
-{% endblock %}
-
-{% block sidebar_right %}
-  <div class="desktop-chat-panel" aria-label="데스크톱 실시간 채팅">
-    <div class="mobile-chat-card">
-      <div class="mobile-chat-head">
-        <div class="mobile-chat-title-row">
-          <span>{{ chat_title }}</span>
-          <span class="live"><span class="dot"></span>온라인</span>
-        </div>
-        <div class="mobile-chat-tabs">
-          <a class="mobile-chat-tab {% if chat_scope == 'global' %}active{% endif %}" href="{% url 'home' %}">전체</a>
-          {% if selected_category %}
-            <a class="mobile-chat-tab {% if chat_scope == 'category' %}active{% endif %}" href="?category={{ selected_category.id }}&chat=category">{{ selected_category.name }}</a>
-          {% elif selected_board %}
-            <a class="mobile-chat-tab {% if chat_scope == 'board' %}active{% endif %}" href="?board={{ selected_board.slug }}">{{ selected_board.name }}</a>
-          {% endif %}
-          {% if user.is_authenticated %}
-            <button class="mobile-chat-tab {% if private_user %}active{% endif %}" type="button" data-private-chat-toggle>개인</button>
-          {% endif %}
-        </div>
-        {% if recent_chat_links %}
-          <div class="recent-chat-strip">
-            {% for chat_link in recent_chat_links %}
-              <a class="mobile-chat-tab" href="{{ chat_link.href }}">{{ chat_link.label }}</a>
-            {% endfor %}
-          </div>
-        {% endif %}
-        {% if user.is_authenticated %}
-          <form class="mobile-private-picker" method="get" data-private-chat-picker>
-            <input type="hidden" name="chat" value="private">
-            <select name="private_user" aria-label="개인채팅 상대">
-              {% for person in profiles %}
-                {% if person.user != user %}
-                  <option value="{{ person.user.id }}" {% if private_user.id == person.user.id %}selected{% endif %}>{{ person.display_name }}</option>
+                {% if not search_query %}
+                {% for post in sample_posts %}
+                    <article class="post">
+                        <div class="post-head">
+                            <div class="avatar">{{ post.title|first }}</div>
+                            <div class="meta">
+                                <strong>{{ post.title }}</strong>
+                                <span>샘플 피드 · 방금 전</span>
+                            </div>
+                        </div>
+                        <div class="post-media">
+                            <h2>{{ post.title }}</h2>
+                        </div>
+                        <div class="post-body">
+                            <p>{{ post.content }}</p>
+                        </div>
+                    </article>
+                {% endfor %}
                 {% endif %}
-              {% endfor %}
-            </select>
-            <button class="btn btn-sm" type="submit">열기</button>
-          </form>
-        {% endif %}
-      </div>
-
-      <div class="mobile-chat-messages" data-chat-messages>
-        {% for chat in chat_messages %}
-          <div class="mobile-message {{ chat.identity_mode }}">
-            <span class="sender">
-              {% if chat.identity_mode == 'real' and chat.user %}
-                <a href="{% url 'profile_feed' chat.user.username %}">{{ chat.sender_name }}</a>
-              {% else %}
-                익명
-              {% endif %}
-              · {{ chat.created_at|date:"H:i" }}
-            </span>
-            {% if chat.message %}{{ chat.message }}{% endif %}
-            {% if chat.image %}<img src="{{ chat.image.url }}" alt="채팅 이미지">{% endif %}
-          </div>
-        {% empty %}
-          <div class="mobile-message">아직 채팅이 없습니다. 익명으로 가볍게 말하거나, 개인 피드 이름으로 참여할 수 있어요.</div>
-        {% endfor %}
-      </div>
-
-      <form class="mobile-chat-form" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="send_chat">
-        <input type="hidden" name="chat_scope" value="{{ chat_scope }}">
-        {% if private_user %}
-          <input type="hidden" name="recipient_id" value="{{ private_user.id }}">
-        {% endif %}
-        <div class="chat-identity-toggle">
-          <label><input type="radio" name="identity_mode" value="anonymous" checked> 익명</label>
-          <label><input type="radio" name="identity_mode" value="real" {% if not user.is_authenticated %}disabled{% endif %}> 실명</label>
-        </div>
-        <div class="chat-row">
-          <input class="mobile-chat-input" data-chat-message type="text" name="message" autocomplete="off" placeholder="메시지">
-          <label class="chat-file-button" title="사진 첨부">
-            +
-            <input type="file" name="image" accept="image/jpeg,image/png,image/gif,image/webp">
-          </label>
-          <button class="chat-send" type="submit">›</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  {% if featured_orbits %}
-    <div class="sidebar-card">
-      <div class="sidebar-card-title">추천 궤도</div>
-      {% for fp in featured_orbits %}
-        {% if fp.category %}
-          <div class="orbit-suggestion">
-            <div class="avatar-placeholder avatar-sm">{{ fp.icon }}</div>
-            <div style="flex:1; min-width:0;">
-              <a href="{% url 'home' %}?category={{ fp.category.id }}" class="orbit-suggestion-name truncate" style="display:block;">{{ fp.name }}</a>
-              <div class="orbit-suggestion-handle truncate">{{ fp.copy }}</div>
             </div>
-          </div>
-        {% endif %}
-      {% endfor %}
-    </div>
-  {% endif %}
+        </section>
 
-  {% if popular_boards %}
-    <div class="sidebar-card">
-      <div class="sidebar-card-title">인기 궤도</div>
-      {% for board in popular_boards %}
-        <div class="trending-item">
-          {% if board.category %}<div class="trending-label">{{ board.category.name }}</div>{% endif %}
-          <div style="font-weight:800;"><a href="{% url 'home' %}?board={{ board.slug }}">{{ board.name }}</a></div>
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-{% endblock %}
+        <aside class="chat" aria-label="실시간 채팅">
+            <div class="chat-box">
+                <div class="chat-head">
+                    <div class="chat-title-row">
+                        <span>{{ chat_title }}</span>
+                        <span class="live"><span class="dot"></span>온라인</span>
+                    </div>
+                    <div class="chat-tabs" data-recent-chat-strip>
+                        <a class="chat-tab {% if chat_scope == 'global' %}active{% endif %}" href="{% url 'home' %}">전체</a>
+                        {% if selected_category %}
+                            <a class="chat-tab {% if chat_scope == 'category' %}active{% endif %}" href="?category={{ selected_category.id }}&chat=category">{{ selected_category.name }}</a>
+                        {% elif selected_board %}
+                            <a class="chat-tab {% if chat_scope == 'board' %}active{% endif %}" href="?board={{ selected_board.slug }}">{{ selected_board.name }}</a>
+                        {% endif %}
+                        {% if user.is_authenticated and private_user %}
+                            <button class="chat-tab chat-tab-button active" type="button" data-private-chat-toggle aria-expanded="false">개인</button>
+                        {% elif user.is_authenticated %}
+                            <button class="chat-tab chat-tab-button" type="button" data-private-chat-toggle aria-expanded="false">개인</button>
+                        {% endif %}
+                        {% if recent_chat_links %}
+                            {% for chat_link in recent_chat_links %}
+                                <a class="recent-chat-link" href="{{ chat_link.href }}" data-recent-chat-link>{{ chat_link.label }}</a>
+                            {% endfor %}
+                            <button class="recent-chat-more" type="button" data-recent-chat-more aria-expanded="false" aria-label="숨겨진 최근 채팅 보기"></button>
+                        {% endif %}
+                    </div>
+                    <div class="recent-chat-menu" data-recent-chat-menu></div>
+                    {% if user.is_authenticated %}
+                        <form class="private-chat-picker" method="get" data-private-chat-picker>
+                            <input type="hidden" name="chat" value="private">
+                            <select name="private_user" aria-label="개인채팅 상대">
+                                {% for person in profiles %}
+                                    {% if person.user != user %}
+                                        <option value="{{ person.user.id }}" {% if private_user.id == person.user.id %}selected{% endif %}>{{ person.display_name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            <button class="button" type="submit">열기</button>
+                        </form>
+                    {% endif %}
+                </div>
+                <div class="messages" id="messages">
+                    {% for chat in chat_messages %}
+                        <div class="message {{ chat.identity_mode }}">
+                            <span class="sender">
+                                {% if chat.identity_mode == 'real' and chat.user %}
+                                    <a href="{% url 'profile_feed' chat.user.username %}">{{ chat.sender_name }}</a>
+                                {% else %}
+                                    익명
+                                {% endif %}
+                                {{ chat.created_at|date:"H:i" }}
+                            </span>
+                            {% if chat.message %}
+                                {{ chat.message }}
+                            {% endif %}
+                            {% if chat.image %}
+                                <img src="{{ chat.image.url }}" alt="채팅 이미지">
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <div class="message">아직 채팅이 없습니다. 익명으로 가볍게 말하거나, 개인 피드 이름으로 참여할 수 있어요.</div>
+                    {% endfor %}
+                </div>
+                <form class="chat-form" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="send_chat">
+                    <input type="hidden" name="chat_scope" value="{{ chat_scope }}">
+                    {% if private_user %}
+                        <input type="hidden" name="recipient_id" value="{{ private_user.id }}">
+                    {% endif %}
+                    <div class="identity-toggle">
+                        <label>
+                            <input type="radio" name="identity_mode" value="anonymous" checked>
+                            익명
+                        </label>
+                        <label>
+                            <input type="radio" name="identity_mode" value="real" {% if not user.is_authenticated %}disabled{% endif %}>
+                            실명{% if user.is_authenticated %} · {{ profile.display_name }}{% endif %}
+                        </label>
+                    </div>
+                    <div class="chat-row">
+                        <input data-chat-message type="text" name="message" autocomplete="off" placeholder="메시지 입력">
+                        <label class="file-button" title="사진 첨부" aria-label="사진 첨부">
+                            <span class="folder-icon" aria-hidden="true"></span>
+                            <input type="file" name="image" accept="image/jpeg,image/png,image/gif,image/webp">
+                        </label>
+                        <button class="send" type="submit" title="보내기">›</button>
+                    </div>
+                    {% if not user.is_authenticated %}
+                        <span class="hint">실명 채팅은 로그인 후 사용할 수 있습니다.</span>
+                    {% endif %}
+                    <span class="hint">사진은 JPG, PNG, GIF, WebP만 가능하고 3MB까지 업로드됩니다.</span>
+                </form>
+            </div>
+        </aside>
+    </main>
+    <script>
+        const boardSearch = document.querySelector("#board-search");
+        const boardSearchForm = document.querySelector("#board-search-form");
+        const boardRows = document.querySelectorAll("[data-board-name]");
+        const topicHeader = document.querySelector(".topic-header");
 
-{% block body_scripts %}
-<script>
-  const mobileModeShell = document.querySelector("[data-mobile-mode-shell]");
-  const mobileModeStorageKey = "orbixMobileMode";
-  const validMobileModes = new Set(["board", "feed", "chat"]);
+        function updateSideStickyTop() {
+            if (!topicHeader) return;
+            const headerBottom = topicHeader.getBoundingClientRect().bottom;
+            const stickyTop = Math.max(84, Math.ceil(headerBottom + 12));
+            document.documentElement.style.setProperty("--side-sticky-top", `${stickyTop}px`);
+        }
 
-  function setMobileMode(mode, persist = true) {
-    const nextMode = validMobileModes.has(mode) ? mode : "feed";
-    if (mobileModeShell) {
-      mobileModeShell.dataset.mobileMode = nextMode;
-    }
-    document.querySelectorAll("[data-mobile-mode-target]").forEach((button) => {
-      button.classList.toggle("active", button.dataset.mobileModeTarget === nextMode);
-    });
-    if (persist) {
-      localStorage.setItem(mobileModeStorageKey, nextMode);
-    }
-  }
+        updateSideStickyTop();
+        window.addEventListener("resize", updateSideStickyTop);
+        window.addEventListener("scroll", updateSideStickyTop, { passive: true });
 
-  const mobileModeParams = new URLSearchParams(window.location.search);
-  const initialMobileMode = mobileModeParams.get("focus_chat") === "1"
-    ? "chat"
-    : (sessionStorage.getItem(mobileModeStorageKey) || localStorage.getItem(mobileModeStorageKey) || "feed");
-  setMobileMode(initialMobileMode, false);
-  sessionStorage.removeItem(mobileModeStorageKey);
+        function filterBoards() {
+            if (!boardSearch) return;
+            const query = boardSearch.value.trim().toLowerCase();
+            boardRows.forEach((row) => {
+                const text = row.dataset.boardName.toLowerCase();
+                row.classList.toggle("hidden", query && !text.includes(query));
+            });
+        }
 
-  document.querySelectorAll("[data-mobile-mode-target]").forEach((button) => {
-    button.addEventListener("click", () => setMobileMode(button.dataset.mobileModeTarget));
-  });
+        if (boardSearch) {
+            boardSearch.addEventListener("input", filterBoards);
+        }
 
-  document.querySelectorAll("[data-private-chat-toggle]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const picker = button.closest(".mobile-chat-card")?.querySelector("[data-private-chat-picker]");
-      picker?.classList.toggle("open");
-    });
-  });
+        document.querySelectorAll("[data-focus-board-search]").forEach((button) => {
+            button.addEventListener("click", () => {
+                boardSearch?.scrollIntoView({ behavior: "smooth", block: "center" });
+                boardSearch?.focus();
+            });
+        });
 
-  document.querySelectorAll("[data-post-url]").forEach((post) => {
-    const openPost = () => { window.location.href = post.dataset.postUrl; };
-    post.addEventListener("click", (event) => {
-      if (event.target.closest("a, button, form, input, textarea, select, label, video")) return;
-      openPost();
-    });
-    post.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        openPost();
-      }
-    });
-  });
+        if (boardSearchForm) {
+            boardSearchForm.addEventListener("submit", (event) => {
+                event.preventDefault();
+                const orbitName = boardSearch.value.trim();
+                if (!orbitName) return;
+                const confirmed = window.confirm(`"${orbitName}" 궤도를 생성합니다.\n동일한 궤도가 있다면 기존 궤도로 입장됩니다.`);
+                if (!confirmed) return;
+                filterBoards();
+                const firstVisibleBoard = Array.from(boardRows).find((row) => !row.classList.contains("hidden") && row.offsetParent !== null);
+                if (firstVisibleBoard) {
+                    window.location.href = firstVisibleBoard.href;
+                    return;
+                }
+                boardSearchForm.submit();
+            });
+        }
 
-  document.querySelectorAll("[data-media-input]").forEach((input) => {
-    input.addEventListener("change", () => {
-      const hint = input.closest(".compose-actions")?.querySelector("[data-media-hint]");
-      if (!hint) return;
-      if (!input.files.length) {
-        hint.textContent = "사진은 최대 20장, 3MB 초과 사진은 자동 압축됩니다.";
-        return;
-      }
-      hint.textContent = input.files.length === 1 ? input.files[0].name : `${input.files.length}개 파일 선택됨`;
-    });
-  });
+        function fitRecentChatStrip() {
+            document.querySelectorAll("[data-recent-chat-strip]").forEach((strip) => {
+                const links = Array.from(strip.querySelectorAll("[data-recent-chat-link]"));
+                const more = strip.querySelector("[data-recent-chat-more]");
+                const menu = strip.closest(".chat-head")?.querySelector("[data-recent-chat-menu]");
+                if (!more || !links.length) return;
 
-  document.querySelectorAll(".feed-share-button").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const url = new URL(button.dataset.sharePath, window.location.origin).href;
-      try {
-        await navigator.clipboard.writeText(url);
-        const oldText = button.textContent;
-        button.textContent = "복사됨";
-        window.setTimeout(() => { button.textContent = oldText; }, 1200);
-      } catch (error) {
-        window.prompt("게시글 링크", url);
-      }
-    });
-  });
+                links.forEach((link) => {
+                    link.hidden = false;
+                });
+                more.style.display = "none";
+                more.textContent = "";
+                more.setAttribute("aria-expanded", "false");
+                if (menu) {
+                    menu.classList.remove("open");
+                    menu.innerHTML = "";
+                }
 
-  document.querySelectorAll("[data-chat-messages]").forEach((messages) => {
-    messages.scrollTop = messages.scrollHeight;
-  });
+                const firstTop = strip.firstElementChild ? strip.firstElementChild.offsetTop : links[0].offsetTop;
+                let hiddenCount = 0;
+                links.forEach((link) => {
+                    if (link.offsetTop > firstTop) {
+                        link.hidden = true;
+                        hiddenCount += 1;
+                    }
+                });
 
-  document.querySelectorAll(".mobile-chat-form").forEach((chatForm) => {
-    chatForm.addEventListener("submit", () => {
-      sessionStorage.setItem(mobileModeStorageKey, "chat");
-    });
-  });
+                if (hiddenCount > 0) {
+                    more.textContent = `+${hiddenCount}`;
+                    more.style.display = "inline-flex";
+                    if (more.offsetTop > firstTop) {
+                        let index = links.length - hiddenCount - 1;
+                        while (index >= 0 && more.offsetTop > firstTop) {
+                            links[index].hidden = true;
+                            hiddenCount += 1;
+                            more.textContent = `+${hiddenCount}`;
+                            index -= 1;
+                        }
+                    }
+                    if (menu) {
+                        links.filter((link) => link.hidden).forEach((link) => {
+                            const menuLink = document.createElement("a");
+                            menuLink.href = link.href;
+                            menuLink.textContent = link.textContent;
+                            menu.appendChild(menuLink);
+                        });
+                    }
+                }
+            });
+        }
 
-</script>
-{% endblock %}
+        fitRecentChatStrip();
+        window.addEventListener("resize", fitRecentChatStrip);
+
+        document.querySelectorAll("[data-recent-chat-more]").forEach((button) => {
+            button.addEventListener("click", (event) => {
+                event.stopPropagation();
+                const menu = button.closest(".chat-head")?.querySelector("[data-recent-chat-menu]");
+                if (!menu) return;
+                const privatePicker = button.closest(".chat-head")?.querySelector("[data-private-chat-picker]");
+                const privateToggle = button.closest(".chat-head")?.querySelector("[data-private-chat-toggle]");
+                if (privatePicker) {
+                    privatePicker.classList.remove("open");
+                }
+                if (privateToggle) {
+                    privateToggle.setAttribute("aria-expanded", "false");
+                }
+                const isOpen = menu.classList.toggle("open");
+                button.setAttribute("aria-expanded", String(isOpen));
+            });
+        });
+
+        document.querySelectorAll("[data-private-chat-toggle]").forEach((button) => {
+            button.addEventListener("click", (event) => {
+                event.stopPropagation();
+                const chatHead = button.closest(".chat-head");
+                const picker = chatHead?.querySelector("[data-private-chat-picker]");
+                const recentMenu = chatHead?.querySelector("[data-recent-chat-menu]");
+                const recentMore = chatHead?.querySelector("[data-recent-chat-more]");
+                if (!picker) return;
+                if (recentMenu) {
+                    recentMenu.classList.remove("open");
+                }
+                if (recentMore) {
+                    recentMore.setAttribute("aria-expanded", "false");
+                }
+                const isOpen = picker.classList.toggle("open");
+                button.setAttribute("aria-expanded", String(isOpen));
+                if (isOpen) {
+                    picker.querySelector("select")?.focus();
+                }
+            });
+        });
+
+        document.addEventListener("click", (event) => {
+            document.querySelectorAll("[data-recent-chat-menu].open").forEach((menu) => {
+                if (menu.contains(event.target)) return;
+                const button = menu.closest(".chat-head")?.querySelector("[data-recent-chat-more]");
+                menu.classList.remove("open");
+                if (button) {
+                    button.setAttribute("aria-expanded", "false");
+                }
+            });
+            document.querySelectorAll("[data-private-chat-picker].open").forEach((picker) => {
+                if (picker.contains(event.target)) return;
+                const button = picker.closest(".chat-head")?.querySelector("[data-private-chat-toggle]");
+                picker.classList.remove("open");
+                if (button) {
+                    button.setAttribute("aria-expanded", "false");
+                }
+            });
+        });
+
+        document.querySelectorAll(".post-tools form").forEach((form) => {
+            form.addEventListener("submit", () => {
+                sessionStorage.setItem("orbixFeedScrollY", String(window.scrollY));
+            });
+        });
+
+        if (new URLSearchParams(window.location.search).get("restore_scroll") === "1") {
+            const savedScrollY = sessionStorage.getItem("orbixFeedScrollY");
+            if (savedScrollY !== null) {
+                window.scrollTo({ top: Number(savedScrollY), left: 0, behavior: "instant" });
+                sessionStorage.removeItem("orbixFeedScrollY");
+            }
+        }
+
+        document.querySelectorAll("[data-media-input]").forEach((input) => {
+            input.addEventListener("change", () => {
+                const hint = input.closest(".media-upload")?.querySelector("[data-media-hint]");
+                if (!hint) return;
+                if (!input.files.length) {
+                    hint.textContent = "사진은 최대 20장, 3MB 초과 사진은 자동 압축됩니다.";
+                    hint.classList.remove("media-status");
+                    return;
+                }
+                hint.textContent = input.files.length === 1 ? input.files[0].name : `${input.files.length}개 파일 선택됨`;
+                hint.classList.add("media-status");
+            });
+        });
+
+        document.querySelectorAll("[data-post-url]").forEach((post) => {
+            const openPost = () => {
+                window.location.href = post.dataset.postUrl;
+            };
+
+            post.addEventListener("click", (event) => {
+                if (event.target.closest("a, button, form, input, textarea, select, label, video")) {
+                    return;
+                }
+                openPost();
+            });
+
+            post.addEventListener("keydown", (event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    openPost();
+                }
+            });
+        });
+
+        document.querySelectorAll(".feed-share-button").forEach((button) => {
+            button.addEventListener("click", async () => {
+                const url = new URL(button.dataset.sharePath, window.location.origin).href;
+                try {
+                    await navigator.clipboard.writeText(url);
+                    const originalText = button.textContent;
+                    button.textContent = "✓";
+                    window.setTimeout(() => {
+                        button.textContent = originalText;
+                    }, 1200);
+                } catch (error) {
+                    window.prompt("게시글 링크", url);
+                }
+            });
+        });
+
+        const chatForm = document.querySelector(".chat-form");
+        if (chatForm) {
+            chatForm.addEventListener("submit", () => {
+                sessionStorage.setItem("orbixChatScrollY", String(window.scrollY));
+            });
+        }
+
+        if (new URLSearchParams(window.location.search).get("focus_chat") === "1") {
+            const chatMessage = document.querySelector("[data-chat-message]");
+            const savedScrollY = sessionStorage.getItem("orbixChatScrollY");
+            if (savedScrollY !== null) {
+                window.scrollTo({ top: Number(savedScrollY), left: 0, behavior: "instant" });
+                sessionStorage.removeItem("orbixChatScrollY");
+            }
+            if (chatMessage) {
+                chatMessage.focus({ preventScroll: true });
+            }
+        }
+
+        const messages = document.querySelector("#messages");
+        if (messages) {
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        if (window.location.hash === "#chat-message") {
+            history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+        }
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("{% url 'service_worker' %}").catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>
+
