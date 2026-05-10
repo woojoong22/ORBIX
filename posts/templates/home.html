@@ -1646,7 +1646,415 @@
             pointer-events: none;
         }
 
+        .concept-callout,
+        .connection-flow {
+            border: 1px solid rgba(124, 92, 255, 0.36);
+            background: rgba(255, 255, 255, 0.86);
+            box-shadow: 0 18px 44px rgba(94, 87, 255, 0.10);
+            backdrop-filter: blur(16px);
+        }
+
+        .concept-callout {
+            position: fixed;
+            z-index: 2;
+            width: 178px;
+            padding: 14px;
+            border-radius: 14px;
+            color: #344054;
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        .concept-callout strong {
+            display: block;
+            margin-bottom: 6px;
+            color: #5b50ff;
+            font-size: 13px;
+        }
+
+        .concept-callout.left-top {
+            left: max(12px, calc((100vw - 1180px) / 2 - 190px));
+            top: 110px;
+        }
+
+        .concept-callout.left-bottom {
+            left: max(12px, calc((100vw - 1180px) / 2 - 190px));
+            bottom: 132px;
+        }
+
+        .concept-callout.right-mid {
+            right: max(12px, calc((100vw - 1180px) / 2 - 190px));
+            top: 316px;
+        }
+
+        .topbar {
+            width: min(1120px, calc(100% - 32px));
+            margin: 0 auto;
+            grid-template-columns: 150px minmax(260px, 1fr) auto;
+            min-height: 56px;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .brand-logo {
+            display: none;
+        }
+
+        .brand-wordmark {
+            font-size: 22px;
+            letter-spacing: 0.02em;
+        }
+
+        .search-form {
+            max-width: none;
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .search {
+            height: 42px;
+            padding-left: 44px;
+            border-radius: 12px;
+            background:
+                linear-gradient(90deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.90)),
+                #fff;
+        }
+
+        .search-form::before {
+            content: "⌕";
+            position: relative;
+            z-index: 1;
+            align-self: center;
+            justify-self: start;
+            margin-left: 16px;
+            margin-right: -34px;
+            color: #667085;
+            pointer-events: none;
+        }
+
+        .search-button {
+            display: none;
+        }
+
+        .nav-actions .button {
+            border: 0;
+            box-shadow: none;
+            background: transparent;
+            min-height: 34px;
+            padding: 0 8px;
+        }
+
+        .topic-header {
+            position: relative;
+            top: auto;
+            z-index: 3;
+            width: min(1120px, calc(100% - 32px));
+            padding: 0;
+            margin: 0 auto 10px;
+        }
+
+        .topic-shell {
+            display: grid;
+            grid-template-columns: 170px minmax(0, 1fr);
+            gap: 12px;
+            align-items: start;
+            width: 100%;
+            padding: 0;
+        }
+
+        .topic-topline {
+            display: contents;
+        }
+
+        .topic-topline::before {
+            content: "지금 뜨는 키워드  🔥";
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            padding: 0 18px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.78);
+            color: #101828;
+            font-size: 14px;
+            font-weight: 900;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .topic-grid {
+            display: flex;
+            gap: 8px;
+            min-width: 0;
+            overflow-x: auto;
+            padding: 8px;
+            border-radius: 14px;
+            background: rgba(245, 247, 255, 0.92);
+            scrollbar-width: none;
+        }
+
+        .topic-grid::-webkit-scrollbar {
+            display: none;
+        }
+
+        .topic-card {
+            grid-auto-flow: column;
+            grid-auto-columns: auto;
+            min-height: 34px;
+            min-width: max-content;
+            padding: 0 13px;
+            border-radius: 999px;
+            background: #fff;
+            box-shadow: none;
+        }
+
+        .topic-card.active,
+        .topic-card:hover {
+            border-color: transparent;
+            background: linear-gradient(135deg, #6c63ff, #9f7aea);
+            color: #fff;
+            transform: none;
+        }
+
+        .topic-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            font-size: 13px;
+        }
+
+        .subtopic-strip,
+        .topic-board-strip,
+        .board-search-panel {
+            grid-column: 2;
+        }
+
+        .board-search-panel {
+            margin-top: 8px;
+            grid-template-columns: 170px minmax(0, 1fr);
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+            padding: 0;
+        }
+
+        .board-search-panel > div {
+            display: grid;
+            align-content: center;
+            min-height: 66px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.84);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .board-search-form {
+            align-self: stretch;
+        }
+
+        .board-search {
+            height: 52px;
+            border-radius: 14px;
+        }
+
+        .board-search-button {
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #6c63ff, #2563eb);
+        }
+
+        .layout {
+            width: min(1120px, calc(100% - 32px));
+            grid-template-columns: 170px minmax(0, 1fr) 310px;
+            gap: 14px;
+            padding: 0 0 28px;
+        }
+
+        .left-rail .summary-grid {
+            position: sticky;
+            top: 24px;
+            min-height: 0;
+            max-height: calc(100vh - 48px);
+            gap: 12px;
+            overflow-y: auto;
+        }
+
+        .summary-panel,
+        .chat-box,
+        .composer,
+        .post,
+        .search-results {
+            border-radius: 16px;
+            border-color: rgba(124, 92, 255, 0.16);
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 16px 42px rgba(46, 55, 104, 0.08);
+        }
+
+        .summary-panel::before,
+        .chat-box::before,
+        .composer::before,
+        .post::before {
+            display: none;
+        }
+
+        .feed-heading {
+            min-height: 0;
+            padding: 0 0 8px;
+            border: 0;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .feed-heading h1 {
+            font-size: 18px;
+        }
+
+        .feed-heading p {
+            font-size: 13px;
+        }
+
+        .search-results[aria-label="오늘 뜨는 궤도"] {
+            padding: 16px;
+        }
+
+        .search-results[aria-label="오늘 뜨는 궤도"] strong::before {
+            content: "🔥 ";
+        }
+
+        .composer {
+            padding: 16px;
+        }
+
+        .composer-body textarea {
+            min-height: 92px;
+        }
+
+        .feed {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .post {
+            padding: 12px;
+            box-shadow: 0 12px 30px rgba(46, 55, 104, 0.08);
+        }
+
+        .post-head {
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .post-head .avatar {
+            width: 30px;
+            height: 30px;
+            font-size: 12px;
+        }
+
+        .post-media {
+            min-height: 170px;
+            margin-top: 10px;
+            border-radius: 12px;
+        }
+
+        .post-media img,
+        .post-media video {
+            border-radius: 12px;
+        }
+
+        .post-body p {
+            font-size: 13px;
+        }
+
+        .chat {
+            top: 24px;
+            max-height: calc(100vh - 48px);
+        }
+
+        .chat-box {
+            grid-template-rows: auto minmax(280px, 1fr) auto;
+            overflow: hidden;
+        }
+
+        .chat-head {
+            background: rgba(248, 250, 255, 0.92);
+        }
+
+        .messages {
+            background: #fff;
+        }
+
+        .message {
+            border-color: rgba(124, 92, 255, 0.10);
+            background: #f8f7ff;
+        }
+
+        .connection-flow {
+            width: min(1120px, calc(100% - 32px));
+            margin: 0 auto 28px;
+            padding: 18px 22px;
+            border-radius: 16px;
+        }
+
+        .connection-flow-title {
+            margin-bottom: 12px;
+            font-weight: 900;
+            color: #101828;
+        }
+
+        .connection-steps {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .connection-step {
+            position: relative;
+            display: grid;
+            grid-template-columns: 38px minmax(0, 1fr);
+            gap: 10px;
+            align-items: center;
+            min-width: 0;
+        }
+
+        .connection-step:not(:last-child)::after {
+            content: "›";
+            position: absolute;
+            right: -12px;
+            color: #8b7cff;
+            font-size: 30px;
+            font-weight: 900;
+        }
+
+        .connection-icon {
+            display: grid;
+            place-items: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #f2efff, #ffffff);
+            color: #6c63ff;
+            font-size: 20px;
+            box-shadow: inset 0 0 0 1px rgba(124, 92, 255, 0.16);
+        }
+
+        .connection-step strong {
+            display: block;
+            font-size: 12px;
+        }
+
+        .connection-step span {
+            display: block;
+            margin-top: 2px;
+            color: #667085;
+            font-size: 11px;
+            line-height: 1.35;
+        }
+
         @media (max-width: 1120px) {
+            .concept-callout,
+            .connection-flow {
+                display: none;
+            }
+
             .layout {
                 grid-template-columns: 1fr;
                 height: auto;
@@ -1686,6 +2094,18 @@
     </style>
 </head>
 <body>
+    <aside class="concept-callout left-top">
+        <strong>혼합된 관심사 키워드</strong>
+        다양한 관심사 키워드를 실시간으로 확인하고 인기순으로 탐색할 수 있습니다.
+    </aside>
+    <aside class="concept-callout left-bottom">
+        <strong>다양한 커뮤니티</strong>
+        서로 다른 관심사 기반의 커뮤니티가 동시에 운영되며, 사용자가 직접 새 주제를 만들 수 있습니다.
+    </aside>
+    <aside class="concept-callout right-mid">
+        <strong>실시간 대화가 연결</strong>
+        게시글을 선택하면 해당 관심사에 대한 실시간 대화방이 열려 바로 소통할 수 있습니다.
+    </aside>
     <header class="topbar">
         <a class="brand" href="{% url 'home' %}" aria-label="Orbix home">
             <img class="brand-logo" src="{% static 'posts/orbix-logo.png' %}?v=20260502b" alt="" aria-hidden="true">
@@ -2156,6 +2576,39 @@
             </div>
         </aside>
     </main>
+    <section class="connection-flow" aria-label="ORBIX 연결 흐름">
+        <div class="connection-flow-title">ORBIX는 이렇게 연결됩니다</div>
+        <div class="connection-steps">
+            <div class="connection-step">
+                <span class="connection-icon">⌕</span>
+                <div>
+                    <strong>1. 관심사 발견</strong>
+                    <span>다양한 키워드와 피드를 통해 새로운 관심사를 발견해요</span>
+                </div>
+            </div>
+            <div class="connection-step">
+                <span class="connection-icon">▤</span>
+                <div>
+                    <strong>2. 게시글 확인</strong>
+                    <span>관심 있는 게시글을 클릭하면 자세한 내용과 반응을 확인해요</span>
+                </div>
+            </div>
+            <div class="connection-step">
+                <span class="connection-icon">☷</span>
+                <div>
+                    <strong>3. 실시간 대화 참여</strong>
+                    <span>바로 연결된 대화방에서 같은 관심사 사람들과 소통해요</span>
+                </div>
+            </div>
+            <div class="connection-step">
+                <span class="connection-icon">☊</span>
+                <div>
+                    <strong>4. 관계 확장</strong>
+                    <span>구독과 소통을 통해 더 깊은 관계로 이어져요</span>
+                </div>
+            </div>
+        </div>
+    </section>
     <script>
         const boardSearch = document.querySelector("#board-search");
         const boardSearchForm = document.querySelector("#board-search-form");
