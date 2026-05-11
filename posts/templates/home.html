@@ -1655,9 +1655,9 @@
 
         .topbar {
             width: min(1120px, calc(100% - 32px));
-            margin: 0 auto;
-            grid-template-columns: 150px minmax(260px, 1fr) auto;
-            min-height: 56px;
+            margin: 12px auto 8px;
+            grid-template-columns: 132px minmax(260px, 1fr) auto;
+            min-height: 52px;
             padding: 0;
             border: 0;
             background: transparent;
@@ -1671,6 +1671,7 @@
         .brand-wordmark {
             font-size: 22px;
             letter-spacing: 0.02em;
+            filter: drop-shadow(0 10px 18px rgba(99, 102, 241, 0.16));
         }
 
         .search-form {
@@ -1685,6 +1686,7 @@
             background:
                 linear-gradient(90deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.90)),
                 #fff;
+            box-shadow: 0 10px 28px rgba(46, 55, 104, 0.07);
         }
 
         .search-form::before {
@@ -1704,11 +1706,17 @@
         }
 
         .nav-actions .button {
-            border: 0;
-            box-shadow: none;
-            background: transparent;
-            min-height: 34px;
-            padding: 0 8px;
+            min-height: 36px;
+            padding: 0 13px;
+            border-color: rgba(124, 92, 255, 0.14);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.82);
+            box-shadow: 0 10px 24px rgba(46, 55, 104, 0.06);
+        }
+
+        .nav-actions .button.primary {
+            color: #fff;
+            background: linear-gradient(135deg, #635bff, #a855f7);
         }
 
         .topic-header {
@@ -1752,10 +1760,12 @@
             gap: 8px;
             min-width: 0;
             overflow-x: auto;
-            padding: 8px;
+            padding: 8px 44px 8px 8px;
             border-radius: 14px;
             background: rgba(245, 247, 255, 0.92);
             scrollbar-width: none;
+            scroll-snap-type: x proximity;
+            scroll-behavior: smooth;
         }
 
         .topic-grid::-webkit-scrollbar {
@@ -1799,20 +1809,31 @@
             transform: translateY(-50%);
         }
 
+        .topic-next-button.is-disabled {
+            opacity: 0.38;
+            cursor: default;
+            pointer-events: none;
+        }
+
         .topic-next-button:hover {
             background: linear-gradient(135deg, #6c63ff, #9f7aea);
             color: #fff;
         }
 
         .topic-card {
+            display: inline-grid;
+            align-items: center;
             grid-auto-flow: column;
             grid-auto-columns: auto;
+            gap: 7px;
             min-height: 34px;
             min-width: max-content;
             padding: 0 13px;
             border-radius: 999px;
             background: #fff;
             box-shadow: none;
+            scroll-snap-align: start;
+            transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
         }
 
         .topic-card.active,
@@ -1820,7 +1841,8 @@
             border-color: transparent;
             background: linear-gradient(135deg, #6c63ff, #9f7aea);
             color: #fff;
-            transform: none;
+            box-shadow: 0 12px 24px rgba(99, 102, 241, 0.18);
+            transform: translateY(-1px);
         }
 
         .topic-count {
@@ -2055,9 +2077,14 @@
 
         .hot-posts-panel {
             padding: 16px;
+            overflow: hidden;
         }
 
         .hot-panel-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
             margin-bottom: 14px;
         }
 
@@ -2075,6 +2102,19 @@
             font-size: 12px;
         }
 
+        .hot-panel-badge {
+            display: inline-flex;
+            align-items: center;
+            min-height: 26px;
+            padding: 0 10px;
+            border-radius: 999px;
+            background: #f3f0ff;
+            color: #6c63ff;
+            font-size: 11px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
         .hot-card-row {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -2085,7 +2125,18 @@
             display: grid;
             gap: 8px;
             min-width: 0;
+            padding: 8px;
+            border: 1px solid rgba(124, 92, 255, 0.10);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.62);
             color: #101828;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+        }
+
+        .hot-card:hover {
+            border-color: rgba(99, 102, 241, 0.28);
+            box-shadow: 0 16px 34px rgba(46, 55, 104, 0.10);
+            transform: translateY(-2px);
         }
 
         .hot-card-tag,
@@ -2119,6 +2170,15 @@
             background: linear-gradient(135deg, #eef4ff, #f5f3ff);
         }
 
+        .hot-card-media::after {
+            content: "";
+            position: absolute;
+            inset: auto 0 0;
+            height: 42%;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0), rgba(15, 23, 42, 0.18));
+            pointer-events: none;
+        }
+
         .hot-card-media img,
         .hot-card-media video {
             width: 100%;
@@ -2139,9 +2199,11 @@
 
         .hot-card-metrics {
             display: flex;
+            align-items: center;
             gap: 14px;
             color: #667085;
             font-size: 12px;
+            font-weight: 800;
         }
 
         .feed-section-title {
@@ -2223,6 +2285,14 @@
         .post {
             padding: 12px;
             box-shadow: 0 12px 30px rgba(46, 55, 104, 0.08);
+            transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+            cursor: pointer;
+        }
+
+        .post:hover {
+            border-color: rgba(99, 102, 241, 0.26);
+            box-shadow: 0 18px 42px rgba(46, 55, 104, 0.12);
+            transform: translateY(-2px);
         }
 
         .post-head {
@@ -2237,9 +2307,11 @@
         }
 
         .post-media {
-            min-height: 170px;
+            min-height: 0;
+            aspect-ratio: 1 / 0.72;
             margin-top: 10px;
             border-radius: 12px;
+            padding: 0;
         }
 
         .post-media img,
@@ -2248,7 +2320,11 @@
         }
 
         .post-body p {
+            display: -webkit-box;
+            overflow: hidden;
             font-size: 13px;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
         }
 
         .chat {
@@ -2274,6 +2350,12 @@
             background: #f8f7ff;
         }
 
+        .message.real {
+            margin-left: auto;
+            border-color: rgba(34, 197, 94, 0.18);
+            background: linear-gradient(135deg, #ecfdf5, #f7f7ff);
+        }
+
         .chat-room-stack {
             display: grid;
             gap: 10px;
@@ -2289,10 +2371,18 @@
             border-radius: 13px;
             background: rgba(255, 255, 255, 0.94);
             box-shadow: 0 12px 30px rgba(46, 55, 104, 0.06);
+            transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
         }
 
         .chat-room-card {
             color: #101828;
+        }
+
+        .chat-room-card:hover,
+        .more-chat-button:hover {
+            border-color: rgba(99, 102, 241, 0.26);
+            box-shadow: 0 16px 34px rgba(46, 55, 104, 0.10);
+            transform: translateY(-2px);
         }
 
         .chat-room-card strong {
@@ -2396,24 +2486,52 @@
             .feed-column { overflow: visible; padding-right: 0; }
             .chat-box { grid-template-rows: auto 260px auto; }
             .board-search-panel { grid-template-columns: 1fr; }
+            .hot-card-row {
+                display: flex;
+                overflow-x: auto;
+                padding-bottom: 4px;
+                scroll-snap-type: x mandatory;
+            }
+            .hot-card {
+                flex: 0 0 min(220px, 78vw);
+                scroll-snap-align: start;
+            }
         }
 
         @media (max-width: 760px) {
             .topbar {
                 grid-template-columns: 1fr;
                 gap: 10px;
-                padding: 12px;
+                width: calc(100% - 24px);
+                margin-top: 10px;
             }
 
             .nav-actions { overflow-x: auto; }
-            .layout { grid-template-columns: 1fr; padding: 12px; }
-            .topic-header { padding: 12px 12px 0; }
-            .topic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .layout {
+                width: calc(100% - 24px);
+                grid-template-columns: 1fr;
+                padding: 0 0 20px;
+            }
+            .topic-header {
+                width: calc(100% - 24px);
+                padding: 0;
+            }
+            .topic-shell {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .topic-topline::before {
+                min-height: 38px;
+            }
+            .topic-grid {
+                padding-right: 44px;
+            }
             .feed { grid-template-columns: 1fr; }
-            .post-media { min-height: 220px; padding: 22px; }
+            .post-media { min-height: 0; padding: 0; }
             .summary-grid { grid-template-columns: 1fr; }
             .composer-actions { align-items: stretch; flex-direction: column; }
             .button.primary { width: 100%; }
+            .connection-flow { display: none; }
         }
     </style>
 </head>
@@ -2673,8 +2791,11 @@
             {% if not search_query and not selected_board and not selected_category %}
                 <section class="hot-posts-panel" aria-label="실시간 반응이 뜨거운 게시글">
                     <div class="hot-panel-head">
-                        <strong>🔥 실시간 반응이 뜨거운 게시글</strong>
-                        <span>여러 관심사에서 가장 활발한 소통되는 글을 모았어요</span>
+                        <div>
+                            <strong>🔥 실시간 반응이 뜨거운 게시글</strong>
+                            <span>여러 관심사에서 가장 활발한 소통되는 글을 모았어요</span>
+                        </div>
+                        <span class="hot-panel-badge">LIVE TOP</span>
                     </div>
                     <div class="hot-card-row">
                         {% for post in popular_posts|slice:":4" %}
@@ -3080,8 +3201,15 @@
         }
 
         document.querySelectorAll("[data-topic-next]").forEach((button) => {
+            const rail = button.closest(".topic-rail-wrap")?.querySelector("[data-topic-rail]");
+            const updateButtonState = () => {
+                if (!rail) return;
+                button.classList.toggle("is-disabled", rail.scrollWidth <= rail.clientWidth + 4);
+            };
+            updateButtonState();
+            rail?.addEventListener("scroll", updateButtonState, { passive: true });
+            window.addEventListener("resize", updateButtonState);
             button.addEventListener("click", () => {
-                const rail = button.closest(".topic-rail-wrap")?.querySelector("[data-topic-rail]");
                 if (!rail) return;
                 const amount = Math.max(rail.clientWidth * 0.72, 220);
                 const atEnd = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 8;
